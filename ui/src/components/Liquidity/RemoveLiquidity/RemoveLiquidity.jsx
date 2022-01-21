@@ -3,7 +3,6 @@ import clsx from 'clsx';
 import Loader from 'react-loader-spinner';
 import { toast } from 'react-toastify';
 import AssetContext from 'context/AssetContext';
-import PoolContext from 'context/PoolContext';
 import { useApplicationContext } from 'context/Application';
 import { FiCheck, FiArrowDown } from 'react-icons/fi';
 import { BiErrorCircle } from 'react-icons/bi';
@@ -16,9 +15,8 @@ import PoolSelector from './PoolSelector/PoolSelector';
 import PursesRemovePool from './PursesRemovePool/PursesRemovePool';
 
 const RemoveLiquidity = props => {
-  const [pool] = useContext(PoolContext);
   const [error, setError] = useState(false);
-  const [asset, setAsset] = useContext(AssetContext);
+  const [asset] = useContext(AssetContext);
   const [amount, setAmount] = useState('');
   const [validated, setValidated] = useState(false);
   const [removed, setRemoved] = useState(false);

@@ -79,5 +79,6 @@
   "prettier": {
     "trailingComma": "all",
     "singleQuote": true
-  }
+  },
+  "eslintIgnore": ["/*.config.js"]
 }

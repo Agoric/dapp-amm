@@ -54,7 +54,7 @@ const AddLiquidity = () => {
   const [wallet, setWallet] = useState(false);
   const [assetExchange, setAssetExchange] = useState(undefined);
   const [error, setError] = useContext(ErrorContext);
-  const [asset, setAsset] = useContext(AssetContext);
+  const [asset] = useContext(AssetContext);
   const [inputType, setInputType] = useState(SWAP_IN);
   const [showLoader, setShowLoader] = useState(false);
   const [liquidityButtonStatus, setLiquidityButtonStatus] = useState(

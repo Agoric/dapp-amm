@@ -1,13 +1,7 @@
 import PoolContext from 'context/PoolContext';
 import Loader from 'react-loader-spinner';
 import { useApplicationContext } from 'context/Application';
-import React, {
-  useState,
-  useEffect,
-  useContext,
-  useMemo,
-  useCallback,
-} from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { v4 } from 'uuid';
 
 import { getInfoForBrand } from 'utils/helpers';
