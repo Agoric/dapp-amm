@@ -80,5 +80,8 @@
     "trailingComma": "all",
     "singleQuote": true
   },
-  "eslintIgnore": ["/*.config.js"]
+  "eslintIgnore": [
+    "/*.config.js",
+    "/build"
+  ]
 }
