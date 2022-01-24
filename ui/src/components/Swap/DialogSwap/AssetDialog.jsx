@@ -86,7 +86,7 @@ const AssetDialog = ({ type, setSelectedAsset }) => {
       <div className="flex flex-col gap-4 p-5 overflow-auto ">
         {Array(4)
           .fill({})
-          .map(__ => (
+          .map(() => (
             <ListItem key={v4()}>
               <SkeletonListItem />
             </ListItem>

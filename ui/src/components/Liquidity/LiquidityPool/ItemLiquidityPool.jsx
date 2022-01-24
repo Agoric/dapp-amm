@@ -18,7 +18,7 @@ const ItemLiquidityPool = ({
   const { state } = useApplicationContext();
   const { assets } = state;
 
-  const [_, setError] = useContext(ErrorContext);
+  const [_error, setError] = useContext(ErrorContext);
   const [asset, setAsset] = useContext(AssetContext);
   const [pool, setPool] = useContext(PoolContext);
 

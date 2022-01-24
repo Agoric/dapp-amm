@@ -65,35 +65,35 @@ jobs:
 #    outputs:
 #      deployments: ${{ steps.set-deployments.outputs.deployments }}
 
-# deploy:
-#   needs: deps # [deps, get-deployments]
-#   runs-on: ubuntu-latest
-#   strategy:
-#     matrix:
-#       deployment: [dapp/ui/deploy] # ${{fromJson(needs.get-deployments.outputs.deployments)}}
-#   steps:
-#   - uses: actions/setup-node@v1
-#     with:
-#       node-version: 14.x
-#   - name: restore built files
-#     uses: actions/cache@v1
-#     with:
-#       path: .
-#       key: ${{ runner.os }}-14.x-built-${{ github.sha }}
-#   - name: Configure dapp
-#     run: |
-#       echo "NETLIFY_SITE_ID=$(cat "${{ matrix.deployment }}/NETLIFY_SITE_ID")" >> $GITHUB_ENV
-#       tar -C "${{ matrix.deployment }}" -cf - src | tar -C dapp/ui -xvf -
-#   - name: yarn build:react in dapp ui
-#     run: yarn build:react
-#     working-directory: ./dapp/ui
+  deploy:
+    needs: deps # [deps, get-deployments]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        deployment: [dapp/ui/deploy] # ${{fromJson(needs.get-deployments.outputs.deployments)}}
+    steps:
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+    - name: restore built files
+      uses: actions/cache@v1
+      with:
+        path: .
+        key: ${{ runner.os }}-14.x-built-${{ github.sha }}
+    - name: Configure dapp
+      run: |
+        echo "NETLIFY_SITE_ID=$(cat "${{ matrix.deployment }}/NETLIFY_SITE_ID")" >> $GITHUB_ENV
+        tar -C "${{ matrix.deployment }}" -cf - src | tar -C dapp/ui -xvf -
+    - name: yarn build:react in dapp ui
+      run: yarn build:react
+      working-directory: ./dapp/ui
 
-#   - name: Deploy via Netlify
-#     uses: nwtgck/actions-netlify@v1.1
-#     with:
-#       # Production deployment if a commit to beta.
-#       production-deploy: ${{ github.ref == 'refs/heads/beta' }}
-#       publish-dir: dapp/ui/build
-#       github-token: ${{ secrets.GITHUB_TOKEN }}
-#     env:
-#       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    - name: Deploy via Netlify
+      uses: nwtgck/actions-netlify@v1.1
+      with:
+        # Production deployment if a commit to beta.
+        production-deploy: ${{ github.ref == 'refs/heads/beta' }}
+        publish-dir: dapp/ui/build
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
