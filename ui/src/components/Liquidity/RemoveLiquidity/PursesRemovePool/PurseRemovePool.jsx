@@ -30,7 +30,6 @@ const PurseRemovePool = ({ pool, type, amount }) => {
       );
 
       if (type === 'centralRemove') {
-        const centralAsset = asset.centralRemove;
         // get central pool values
         const centralPool = liquidityInfo.Central;
         // determine nat values of central pool

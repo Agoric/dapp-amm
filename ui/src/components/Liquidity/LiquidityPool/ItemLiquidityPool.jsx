@@ -4,7 +4,6 @@ import AssetContext from 'context/AssetContext';
 import PoolContext from 'context/PoolContext';
 import ErrorContext from 'context/ErrorContext';
 
-const ALL = 'ALL';
 const YOURS = 'YOURS';
 
 const ItemLiquidityPool = ({
@@ -19,7 +18,7 @@ const ItemLiquidityPool = ({
   const { state } = useApplicationContext();
   const { assets } = state;
 
-  const [error, setError] = useContext(ErrorContext);
+  const [_error, setError] = useContext(ErrorContext);
   const [asset, setAsset] = useContext(AssetContext);
   const [pool, setPool] = useContext(PoolContext);
 

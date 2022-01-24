@@ -43,7 +43,7 @@
     "configure": "node use-on-chain-config",
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test",
+    "test": "craco test --passWithNoTests",
     "build:ses": "cp ../node_modules/ses/dist/lockdown.umd.js public/",
     "build:react": "yarn configure; yarn build:pre-patch; craco build; yarn build:post-patch",
     "build:pre-patch": "node -r esm ./ses-patch.js src/utils/installSESLockdown.js",
@@ -79,5 +79,9 @@
   "prettier": {
     "trailingComma": "all",
     "singleQuote": true
-  }
+  },
+  "eslintIgnore": [
+    "/*.config.js",
+    "/build"
+  ]
 }

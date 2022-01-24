@@ -15,7 +15,7 @@ const SkeletonPurseDialog = () => {
       <div className="flex flex-col gap-4  px-5 pb-5 overflow-auto ">
         {Array(3)
           .fill({})
-          .map(item => (
+          .map(() => (
             <ListItem key={v4()}>
               <SkeletonListItem />
             </ListItem>

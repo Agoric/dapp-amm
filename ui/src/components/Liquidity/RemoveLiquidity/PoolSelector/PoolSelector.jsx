@@ -1,5 +1,5 @@
 import PoolContext from 'context/PoolContext';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 
 const PoolSelector = ({ setOpen }) => {
   const [pool] = useContext(PoolContext);
