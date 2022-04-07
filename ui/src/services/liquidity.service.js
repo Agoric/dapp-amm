@@ -1,4 +1,4 @@
-import { E } from '@agoric/captp';
+import { E } from '@endo/captp';
 import { stringifyPurseValue } from '@agoric/ui-components';
 import { parseAsNat } from '@agoric/ui-components/dist/display/natValue/parseAsNat';
 import { stringifyNat } from '@agoric/ui-components/dist/display/natValue/stringifyNat';

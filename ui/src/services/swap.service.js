@@ -1,4 +1,4 @@
-import { E } from '@agoric/captp';
+import { E } from '@endo/captp';
 import { makeRatio } from '@agoric/zoe/src/contractSupport';
 import { dappConfig } from '../utils/config.js';
 

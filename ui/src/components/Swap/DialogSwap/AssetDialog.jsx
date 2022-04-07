@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { E } from '@agoric/captp';
+import { E } from '@endo/captp';
 import { useApplicationContext } from 'context/Application';
 import AssetContext from 'context/AssetContext';
 import React, { useContext, useEffect, useState, useRef } from 'react';
