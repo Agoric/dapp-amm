@@ -19,13 +19,11 @@ import {
   defaultState,
   setPurses,
   setAssets,
-  setConnected,
   resetState,
-  updateVault,
   setAutoswap,
   setApproved,
-  updateOffers,
   setError,
+  updateOffers,
 } from '../store/store';
 
 import {
@@ -44,87 +42,6 @@ export const ApplicationContext = createContext();
 export function useApplicationContext() {
   return useContext(ApplicationContext);
 }
-
-function watchVault(id, dispatch) {
-  console.log('vaultWatched', id);
-
-  // There is no UINotifier for offers that haven't been accepted, but
-  // we still want to show that the offer exists
-
-  const status = 'Pending Wallet Acceptance';
-  dispatch(
-    updateVault({
-      id,
-      vault: { status },
-    }),
-  );
-
-  async function vaultUpdater() {
-    const uiNotifier = E(walletP).getUINotifier(id);
-    for await (const value of iterateNotifier(uiNotifier)) {
-      console.log('======== VAULT', id, value);
-      dispatch(
-        updateVault({ id, vault: { ...value, status: 'Loan Initiated' } }),
-      );
-    }
-  }
-
-  vaultUpdater().catch(err => {
-    console.error('Vault watcher exception', id, err);
-    dispatch(updateVault({ id, vault: { status: 'Error in offer', err } }));
-  });
-}
-
-function watchOffers(dispatch, INSTANCE_BOARD_ID) {
-  const watchedVaults = new Set();
-  async function offersUpdater() {
-    const offerNotifier = E(walletP).getOffersNotifier();
-    for await (const offers of iterateNotifier(offerNotifier)) {
-      for (const {
-        id,
-        instanceHandleBoardId,
-        continuingInvitation,
-      } of offers) {
-        if (
-          instanceHandleBoardId === INSTANCE_BOARD_ID &&
-          !watchedVaults.has(id) &&
-          continuingInvitation === undefined // AdjustBalances and CloseVault offers use continuingInvitation
-        ) {
-          watchedVaults.add(id);
-          watchVault(id, dispatch);
-        }
-      }
-      console.log('======== OFFERS', offers);
-      dispatch(updateOffers(offers));
-    }
-  }
-  offersUpdater().catch(err => console.error('Offers watcher exception', err));
-}
-
-// CMT (danish): We do not require treasury in this app
-
-// const setupTreasury = async (dispatch, brandToInfo, zoe, board, instanceID) => {
-//   const instance = await E(board).getValue(instanceID);
-//   const treasuryAPIP = E(zoe).getPublicFacet(instance);
-//   const [treasuryAPI, terms, collaterals] = await Promise.all([
-//     treasuryAPIP,
-//     E(zoe).getTerms(instance),
-//     E(treasuryAPIP).getCollaterals(),
-//   ]);
-//   const {
-//     issuers: { RUN: runIssuer },
-//     brands: { RUN: runBrand },
-//   } = terms;
-//   dispatch(setTreasury({ instance, treasuryAPI, runIssuer, runBrand }));
-//   await storeAllBrandsFromTerms({
-//     dispatch,
-//     terms,
-//     brandToInfo,
-//   });
-//   console.log('SET COLLATERALS', collaterals);
-//   dispatch(setCollaterals(collaterals));
-//   return { terms, collaterals };
-// };
 
 const setupAMM = async (dispatch, brandToInfo, zoe, board, instanceID) => {
   const instance = await E(board).getValue(instanceID);
@@ -145,6 +62,17 @@ const setupAMM = async (dispatch, brandToInfo, zoe, board, instanceID) => {
     brandToInfo,
   });
 };
+
+function watchOffers(dispatch) {
+  async function offersUpdater() {
+    const offerNotifier = E(walletP).getOffersNotifier();
+    for await (const offers of iterateNotifier(offerNotifier)) {
+      console.log('======== OFFERS', offers);
+      dispatch(updateOffers(offers));
+    }
+  }
+  offersUpdater().catch(err => console.error('Offers watcher exception', err));
+}
 
 /* eslint-disable complexity, react/prop-types */
 export default function Provider({ children }) {
@@ -168,7 +96,6 @@ export default function Provider({ children }) {
       async onConnect() {
         const { CONTRACT_NAME, AMM_NAME } = dappConfig;
 
-        dispatch(setConnected(true));
         const socket = getActiveSocket();
         const {
           abort: ctpAbort,
@@ -185,8 +112,6 @@ export default function Provider({ children }) {
 
         await refreshConfigFromWallet(walletP);
         const {
-          INSTALLATION_BOARD_ID,
-          INSTANCE_BOARD_ID,
           RUN_ISSUER_BOARD_ID,
           AMM_INSTALLATION_BOARD_ID,
           AMM_INSTANCE_BOARD_ID,
@@ -234,8 +159,6 @@ export default function Provider({ children }) {
           console.error('got watchBrands err', err);
         });
         await Promise.all([
-          E(walletP).suggestInstallation('Installation', INSTALLATION_BOARD_ID),
-          E(walletP).suggestInstance('Instance', INSTANCE_BOARD_ID),
           E(walletP).suggestInstallation(
             `${AMM_NAME}Installation`,
             AMM_INSTALLATION_BOARD_ID,
@@ -247,10 +170,9 @@ export default function Provider({ children }) {
           E(walletP).suggestIssuer('RUN', RUN_ISSUER_BOARD_ID),
         ]);
 
-        watchOffers(dispatch, INSTANCE_BOARD_ID);
+        watchOffers(dispatch);
       },
       onDisconnect() {
-        dispatch(setConnected(false));
         dispatch(setApproved(false));
         console.log('Running on Disconnect');
         walletAbort && walletAbort();
@@ -264,8 +186,7 @@ export default function Provider({ children }) {
           console.log(obj.exception.body);
           dispatch(
             setError({
-              name:
-                'Zoe purse balance is 0.First send Runs to zoe purse using your wallet.Then Refresh browser to continue.',
+              name: 'Something went wrong.',
             }),
           );
         } else {

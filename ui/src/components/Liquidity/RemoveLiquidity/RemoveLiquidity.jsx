@@ -32,7 +32,7 @@ const RemoveLiquidity = props => {
   const [currentOfferId, setCurrentOfferId] = useState(walletOffers.length);
   const [wallet, setWallet] = useState(false);
   const [removeButtonStatus, setRemoveButtonStatus] = useState(
-    'Confirm Withdrawl',
+    'Confirm Withdrawal',
   );
   const defaultProperties = {
     position: 'top-right',
@@ -79,7 +79,7 @@ const RemoveLiquidity = props => {
       ) {
         setTimeout(() => {
           setRemoved(false);
-          setRemoveButtonStatus('Confirm Withdrawl');
+          setRemoveButtonStatus('Confirm Withdrawal');
         }, 3000);
       }
     }
@@ -141,7 +141,6 @@ const RemoveLiquidity = props => {
   return (
     <motion.div
       className="flex flex-col gap-4"
-      layout
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -172,7 +171,7 @@ const RemoveLiquidity = props => {
         onClick={handleRemovePool}
       >
         <motion.div className="relative flex-row w-full justify-center items-center">
-          {removed && removeButtonStatus === 'Confirm Withdrawl' && (
+          {removed && removeButtonStatus === 'Confirm Withdrawal' && (
             <Loader
               className="absolute right-0"
               type="Oval"

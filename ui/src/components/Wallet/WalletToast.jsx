@@ -2,7 +2,6 @@ import React from 'react';
 import { ToastContainer } from 'react-toastify';
 import { IoCloseOutline } from 'react-icons/io5';
 import ApprovalToast from './ApprovalToast';
-import ConnectionToast from './ConnectionToast';
 
 function WalletToast() {
   const closeButton = ({ closeToast }) => (
@@ -14,7 +13,6 @@ function WalletToast() {
   return (
     <div>
       <ApprovalToast />
-      <ConnectionToast />
       <ToastContainer
         enableMultiContainer
         containerId={'Wallet'}
