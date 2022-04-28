@@ -87,7 +87,7 @@ const AddLiquidity = () => {
       if (liquidityStatus === 'accept') {
         setLiquidityButtonStatus('added');
         toast.update(Id, {
-          render: 'Liquidity pool added successfully',
+          render: 'Liquidity added successfully',
           type: toast.TYPE.SUCCESS,
           ...defaultProperties,
         });
@@ -388,7 +388,6 @@ const AddLiquidity = () => {
   return (
     <motion.div
       className="flex flex-col gap-4"
-      layout
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -422,7 +421,7 @@ const AddLiquidity = () => {
       )}
       {exchangeRateLoader && (
         <motion.div className="flex flex-row justify-left items-center text-gray-400">
-          <Loader type="Oval" color="#62d2cb" height={15} width={15} />
+          <Loader type="Oval" color="#62d2cb" height={48} width={20} />
           <div className="pl-2 text-lg">Fetching best price...</div>
         </motion.div>
       )}

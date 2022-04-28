@@ -6,11 +6,11 @@ import { motion } from 'framer-motion';
 const OptionsSwap = ({ slippage, setSlippage }) => {
   // TODO (ahmed): add validation to give error on slippage < 0 & > 10
   const slippageToolTip =
-    'With Slippage Tolerance, you can set the maximum % of price movement you can live with. Anything above that and your order will fail to execute.';
+    'With Slippage Tolerance, you can set the maximum % of price movement you will accept. If exceeded, your order will not execute.';
   return (
     <motion.div
       layout
-      className="w-full py-1  flex justify-between items-center"
+      className="w-full py-1 flex justify-between items-center"
     >
       <div className="flex gap-2 items-center align-items">
         <h2>Slippage Tolerance</h2>

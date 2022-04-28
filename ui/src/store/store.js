@@ -13,20 +13,11 @@ export const {
   initial: defaultState,
   actions: {
     setApproved,
-    setConnected,
     setPurses,
     mergeBrandToInfo,
     addToBrandToInfo,
-    setCollaterals,
-    resetState,
-    setTreasury,
-    setVaultCollateral,
-    setVaultConfiguration,
-    createVault,
-    setVaultToManageId,
-    updateVault,
     updateOffers,
-    resetVault,
+    resetState,
     setAutoswap,
     setAssets,
     setError,
@@ -36,32 +27,14 @@ export const {
   initial: {
     approved: true,
     connected: false,
-    account: null,
     purses: null,
     brandToInfo: [], // [[brand, infoObj] ...]
-    // Autoswap state
     autoswap: {},
-    // Vault state
-    treasury: null,
-    vaultCollateral: null,
-    vaultConfiguration: null,
-    vaults: {},
-    collaterals: null,
-    vaultToManageId: null,
     assets: [],
     walletOffers: [],
     error: {},
   },
   actions: {
-    createVault: (state, { id, vault }) => {
-      return {
-        ...state,
-        vaults: {
-          ...state.vaults,
-          [id]: vault,
-        },
-      };
-    },
     updateOffers: (state, offers) => {
       console.log('============Update offer reducer=====================');
       console.log(offers);
@@ -71,27 +44,9 @@ export const {
         walletOffers: offers,
       };
     },
-    updateVault: ({ vaults, ...state }, { id, vault }) => {
-      const oldVaultData = vaults[id];
-      const status = vault.liquidated ? 'Liquidated' : vault.status;
-      return {
-        ...state,
-        vaults: { ...vaults, [id]: { ...oldVaultData, ...vault, status } },
-      };
-    },
-    resetVault: state => ({
-      ...state,
-      vaultCollateral: null,
-      vaultConfiguration: null,
-    }),
     resetState: state => ({
       ...state,
       purses: null,
-      collaterals: null,
-      inputPurse: null,
-      outputPurse: null,
-      inputAmount: null,
-      outputAmount: null,
     }),
     mergeBrandToInfo: (state, newBrandToInfo) => {
       const merged = new Map([...state.brandToInfo, ...newBrandToInfo]);

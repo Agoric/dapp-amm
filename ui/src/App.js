@@ -33,7 +33,7 @@ const App = () => {
       <InformationToast />
       <WalletToast />
       <motion.div
-        className="min-h-screen container px-4 mx-auto  py-6 flex flex-col  items-center relative"
+        className="min-h-screen container px-4 mx-auto py-6 flex flex-col items-center relative"
         layout
       >
         <img
@@ -54,7 +54,7 @@ const App = () => {
                 whileTap={{ scale: 0.9 }}
                 className={clsx(
                   'tab font-medium',
-                  index === 0 ? 'bg-alternative ' : 'bg-white',
+                  index === 0 ? 'bg-alternative' : 'bg-white',
                 )}
               >
                 Swap
@@ -65,7 +65,7 @@ const App = () => {
                 whileTap={{ scale: 0.9 }}
                 className={clsx(
                   'tab font-medium',
-                  index === 1 ? 'bg-alternative ' : 'bg-white',
+                  index === 1 ? 'bg-alternative' : 'bg-white',
                 )}
               >
                 Liquidity

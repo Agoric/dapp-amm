@@ -7,8 +7,6 @@ import PoolContext from 'context/PoolContext';
 import AssetWrapper from 'context/AssetWrapper';
 import ErrorWrapper from 'context/ErrorWrapper';
 
-import { getInfoForBrand } from 'utils/helpers';
-
 import { motion } from 'framer-motion';
 import React, { useState, useEffect, useContext } from 'react';
 import { FiChevronRight } from 'react-icons/fi';
@@ -22,19 +20,18 @@ const Liquidity = () => {
   const tabClass = index =>
     tabIndex === index
       ? 'border-b-4 border-alternativeBright rounded-b-sm text-alternativeBright w-[50%] text-center font-medium uppercase p-1'
-      : 'bg-white text-gray-400 text-center w-[50%] font-medium uppercase p-1 pt-[6px] pb-[2px]';
+      : 'bg-white text-gray-400 text-center w-[50%] font-medium uppercase p-1 pt-[6px] pb-[2px] cursor-pointer';
   const [assetloader, setAssetLoader] = useState(false);
   const [open, setOpen] = useState(false);
   const liquidityHook = useState({ central: null, liquidity: null });
   const errorHook = useState(undefined);
-  const [centralInfo, setCentralInfo] = useState(null);
   const [pool, setPool] = useContext(PoolContext);
   // get state
   const { state } = useApplicationContext();
   const {
     brandToInfo,
     approved,
-    autoswap: { ammAPI, centralBrand },
+    autoswap: { ammAPI },
   } = state;
   useEffect(() => {
     brandToInfo.length <= 0 || !approved
@@ -80,7 +77,6 @@ const Liquidity = () => {
       // further process userPairs to determine liquidity percentages
     };
     state && state.assets && getPool();
-    setCentralInfo(getInfoForBrand(brandToInfo, centralBrand));
   }, [state.assets]);
 
   return (
@@ -92,13 +88,7 @@ const Liquidity = () => {
           setOpen={setOpen}
           setTabIndex={setTabIndex}
         />
-        <motion.div
-          className="flex flex-col gap-2"
-          layout
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
+        <motion.div className="flex flex-col gap-2">
           <button
             className="uppercase flex items-center text-sm gap-1 text-gray-500 hover:text-black"
             onClick={() => {
@@ -114,13 +104,12 @@ const Liquidity = () => {
               opacity: 1,
               boxShadow: '0px 0px 99px var(--color-secondary)',
             }}
-            transition={{ duration: 0.8 }}
-            layout
+            transition={{ duration: 0.4 }}
           >
             <div className="flex flex-col justify-between  gap-2 ">
               <h1 className="text-2xl font-semibold">Liquidity</h1>
               <h2 className="text-gray-500 ">
-                All liquidity pairs currently use {centralInfo?.petname}
+                All liquidity pairs currently use RUN.
               </h2>
             </div>
             <div>
