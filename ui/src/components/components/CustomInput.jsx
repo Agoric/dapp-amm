@@ -68,6 +68,7 @@ function CustomInput({
       {asset[type]?.purse && (
         <div className="absolute right-3 top-1 text-gray-400 flex flex-col text-right text-sm bg-white">
           <div>Balance: {balance}</div>
+          <div>~ ${asset[type].purse.balanceUSD}</div>
         </div>
       )}
     </div>
