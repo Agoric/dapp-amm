@@ -27,12 +27,6 @@ const AmountToRemove = ({ value, setValue, poolShare }) => {
         <div className="flex justify-between text-sm">
           <div>
             <button
-              className="rounded-full bg-blue-200 py-1 px-2"
-              onClick={() => updateVal(5)}
-            >
-              5%
-            </button>
-            <button
               className="rounded-full bg-blue-200 py-1 px-2 ml-2"
               onClick={() => updateVal(25)}
             >
@@ -49,6 +43,12 @@ const AmountToRemove = ({ value, setValue, poolShare }) => {
               onClick={() => updateVal(75)}
             >
               75%
+            </button>
+            <button
+              className="rounded-full bg-blue-200 py-1 px-2 ml-2"
+              onClick={() => updateVal(75)}
+            >
+              100%
             </button>
           </div>
           <div>

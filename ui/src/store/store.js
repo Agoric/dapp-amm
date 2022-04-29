@@ -13,7 +13,6 @@ export const {
   initial: defaultState,
   actions: {
     setApproved,
-    setPurses,
     mergeBrandToInfo,
     addToBrandToInfo,
     updateOffers,
@@ -63,17 +62,13 @@ export const {
       };
     },
     setAssets: (state, purses) => {
-      console.log('THESE ARE THE PURSES PASSED', purses);
       const filteredPurses = purses?.filter(
         purse => purse.displayInfo.assetKind !== 'set',
       );
       // used for storing intermediate response
       const interArr = [];
       filteredPurses?.forEach(purse => {
-        // balances noted in bigInt, stringifying them
-        console.log();
         const balance = stringifyPurseValue(purse);
-        console.log('New Balance!!:', balance);
         // if such asset already inserted
         const similarAssetIndex = interArr.findIndex(elem => {
           return elem.code === purse.brandPetname;
@@ -137,6 +132,7 @@ export const {
       console.log('asset being updated :', interArr);
       return {
         ...state,
+        purses,
         assets: interArr,
       };
     },
