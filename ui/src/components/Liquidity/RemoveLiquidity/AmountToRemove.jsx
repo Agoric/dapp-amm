@@ -46,7 +46,7 @@ const AmountToRemove = ({ value, setValue, poolShare }) => {
             </button>
             <button
               className="rounded-full bg-blue-200 py-1 px-2 ml-2"
-              onClick={() => updateVal(75)}
+              onClick={() => updateVal(100)}
             >
               100%
             </button>

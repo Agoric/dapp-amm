@@ -13,24 +13,14 @@ function CustomInput({
   const { assets } = state;
 
   const balance = useMemo(() => {
-    let purse;
-    let exit = false;
-    assets.forEach(assetobj => {
-      if (exit) return;
-      assetobj.purses.forEach(p => {
-        if (exit) return;
-        if (p?.name === asset[type]?.purse?.name) {
-          purse = p;
-          exit = true;
-        }
-      });
-    });
+    const purse = assets
+      .map(({ purses }) => purses)
+      .flat()
+      .find(({ name }) => name === asset[type]?.purse?.name);
     return purse?.balance;
   }, [assets, asset]);
 
-  const onMax = () => {
-    asset[type] && handleChange({ target: { value: balance } });
-  };
+  const onMax = () => handleChange({ target: { value: balance } });
 
   const showMaxButton = type === 'from' && balance;
 

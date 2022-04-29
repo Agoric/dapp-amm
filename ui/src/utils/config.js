@@ -23,7 +23,6 @@ export async function refreshConfigFromWallet(walletP) {
 
   const [method, args] = dappConfig.ON_CHAIN_CONFIG;
   console.log('have method', method, 'args', args);
-  const overrideConfig = await E(walletP)[method](...args);
-  console.log('overriding with', overrideConfig);
-  dappConfig = { ...dappConfig, ...overrideConfig };
+  const chainConfig = await E(walletP)[method](...args);
+  dappConfig = { ...chainConfig, ...dappConfig };
 }

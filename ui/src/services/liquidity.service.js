@@ -261,7 +261,7 @@ export const addLiquidityService = async (
     );
   }
 
-  console.log('LIQUIDITY PURSE', liquidityPurse);
+  console.log('LIQUIDITY PURSE', liquidityPurse, CONTRACT_NAME);
 
   const id = `${Date.now()}`;
   let invitation;
