@@ -11,7 +11,6 @@ const SectionSwap = ({ type, value, handleChange, rateAvailable }) => {
   const [open, setOpen] = useState(false);
   const [asset] = useContext(AssetContext);
   const selected = asset[type];
-  console.log('open', open);
   useEffect(() => {
     console.log('show asset', asset);
   });

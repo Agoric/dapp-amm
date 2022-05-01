@@ -17,7 +17,6 @@ import { dappConfig, refreshConfigFromWallet } from '../utils/config';
 import {
   reducer,
   defaultState,
-  setPurses,
   setAssets,
   resetState,
   setAutoswap,
@@ -135,8 +134,6 @@ export default function Provider({ children }) {
         async function watchPurses() {
           const pn = E(walletP).getPursesNotifier();
           for await (const purses of iterateNotifier(pn)) {
-            dispatch(setPurses(purses));
-            // console.info('THESE ARE PURSES: ', purses);
             dispatch(setAssets(purses));
           }
         }

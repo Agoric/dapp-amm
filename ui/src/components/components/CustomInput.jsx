@@ -1,5 +1,5 @@
 import { useApplicationContext } from 'context/Application';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 function CustomInput({
   value,
@@ -11,36 +11,23 @@ function CustomInput({
 }) {
   const { state } = useApplicationContext();
   const { assets } = state;
-  const [balance, setBalance] = useState(asset[type]?.purse?.balance);
-  const onMax = () => {
-    asset[type] &&
-      handleChange({ target: { value: asset[type].purse.balance } });
-  };
-  const purseBalance = useMemo(() => {
-    let obj = {};
-    let exit = 0;
-    assets.forEach(assetobj => {
-      if (exit) return;
-      assetobj.purses.forEach(cpurse => {
-        if (exit) return;
-        if (cpurse?.name === asset[type]?.purse?.name) {
-          obj = cpurse;
-          exit = 1;
-        }
-      });
-    });
-    return obj.balance;
-  }, [assets]);
-  useEffect(() => {
-    asset[type]?.purse?.balance && !purseBalance
-      ? setBalance(asset[type]?.purse?.balance)
-      : setBalance(purseBalance);
-  }, [assets, asset[type]]);
+
+  const balance = useMemo(() => {
+    const purse = assets
+      .map(({ purses }) => purses)
+      .flat()
+      .find(({ name }) => name === asset[type]?.purse?.name);
+    return purse?.balance;
+  }, [assets, asset]);
+
+  const onMax = () => handleChange({ target: { value: balance } });
+
+  const showMaxButton = type === 'from' && balance;
+
   return (
     <div className="relative flex-grow">
-      {asset[type]?.purse && (
+      {showMaxButton && (
         <div className="absolute top-3 left-3">
-          {' '}
           <button
             className={
               'bg-transparent hover:bg-gray-100 text-[#3BC7BE] font-semibold py-[3px] px-1 border border-[#3BC7BE] rounded text-xs leading-3'
@@ -58,7 +45,7 @@ function CustomInput({
         value={value}
         onChange={handleChange}
         className={`rounded-sm bg-white bg-opacity-100 text-xl p-3 leading-6 w-full hover:outline-none focus:outline-none border-none ${
-          asset[type]?.purse ? 'pl-[52px]' : 'pl-[12px]'
+          showMaxButton ? 'pl-[52px]' : 'pl-[12px]'
         }`}
         disabled={
           useCase === 'swap'

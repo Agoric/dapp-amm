@@ -466,10 +466,6 @@ const Swap = () => {
                   });
                   setSwapFrom(swapTo);
                   setSwapTo(swapFrom);
-                  setAssetExchange({
-                    ...assetExchange,
-                    marketRate: invertRatio(assetExchange.marketRate),
-                  });
                 }
               }}
             />
