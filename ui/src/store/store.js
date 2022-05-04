@@ -13,6 +13,7 @@ export const {
   initial: defaultState,
   actions: {
     setApproved,
+    setConnected,
     mergeBrandToInfo,
     addToBrandToInfo,
     updateOffers,

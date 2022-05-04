@@ -13,6 +13,7 @@
     "@agoric/notifier": "dev",
     "@agoric/same-structure": "^0.1.29",
     "@agoric/ui-components": "dev",
+    "@agoric/web-components": "dev",
     "@agoric/zoe": "^0.21.0",
     "@craco/craco": "^6.3.0",
     "@headlessui/react": "^1.4.1",
