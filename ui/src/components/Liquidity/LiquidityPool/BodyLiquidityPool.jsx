@@ -32,9 +32,9 @@ const BodyLiquidityPool = props => {
     return pool.allocations;
   }, [pool.allocations]);
   const newPool = useMemo(() => {
-    return pool?.allocations
-      ?.filter(({ Central, Secondary }) => Central && Secondary)
-      ?.map(item => {
+    return (pool?.allocations || [])
+      .filter(({ Central, Secondary }) => Central && Secondary)
+      .map(item => {
         const central = item.Central;
         const secondary = item.Secondary;
         const centralInfo = getInfoForBrand(brandToInfo, central.brand);

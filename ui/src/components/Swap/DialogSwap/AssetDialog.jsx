@@ -15,10 +15,9 @@ const AssetDialog = ({ type, setSelectedAsset }) => {
     autoswap: { centralBrand, poolBrands },
   } = state;
 
-  const filteredAssets =
-    assets?.filter(
-      ({ brand }) => poolBrands.includes(brand) || brand === centralBrand,
-    ) ?? [];
+  const filteredAssets = (assets || []).filter(
+    ({ brand }) => poolBrands.includes(brand) || brand === centralBrand,
+  );
 
   if (!filteredAssets.length)
     return (
@@ -35,7 +34,7 @@ const AssetDialog = ({ type, setSelectedAsset }) => {
 
   return (
     <div className="flex flex-col gap-4 p-5 overflow-auto ">
-      {filteredAssets?.map(item => (
+      {filteredAssets.map(item => (
         <div
           key={v4()}
           onClick={() => {
