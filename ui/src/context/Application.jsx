@@ -43,10 +43,12 @@ const setupAMM = async (dispatch, brandToInfo, zoe, board, instanceID) => {
   // TODO this uses getTerms.brands, but that includes utility tokens, etc.
   // We need a query/notifier for what are the pools supported
   const {
-    brands: { Central: centralBrand, ...otherBrands },
+    brands: { Central: centralBrand },
   } = terms;
-  console.log('AMM brands retrieved', otherBrands);
-  dispatch(setAutoswap({ instance, ammAPI, centralBrand, otherBrands }));
+  const poolBrands = await E(ammAPI).getAllPoolBrands();
+  console.log('AMM brands retrieved', centralBrand, poolBrands);
+
+  dispatch(setAutoswap({ instance, ammAPI, centralBrand, poolBrands }));
   await storeAllBrandsFromTerms({
     dispatch,
     terms,
