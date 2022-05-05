@@ -93,7 +93,6 @@ export const getPoolAllocationService = async (ammAPI, assets) => {
 
   try {
     allPoolBrands = await E(ammAPI).getAllPoolBrands();
-    console.log('ALL POOL BRANDS: ', allPoolBrands);
   } catch (error) {
     console.error(error);
   }

@@ -32,26 +32,28 @@ const BodyLiquidityPool = props => {
     return pool.allocations;
   }, [pool.allocations]);
   const newPool = useMemo(() => {
-    return pool?.allocations?.map(item => {
-      const central = item.Central;
-      const secondary = item.Secondary;
-      const centralInfo = getInfoForBrand(brandToInfo, central.brand);
-      const secondaryInfo = getInfoForBrand(brandToInfo, secondary.brand);
-      const centralValString = stringifyNat(
-        central.value,
-        centralInfo.decimalPlaces,
-        PLACES_TO_SHOW,
-      );
-      const secondaryValString = stringifyNat(
-        secondary.value,
-        secondaryInfo.decimalPlaces,
-        PLACES_TO_SHOW,
-      );
-      return {
-        Central: { info: centralInfo, value: centralValString },
-        Secondary: { info: secondaryInfo, value: secondaryValString },
-      };
-    });
+    return (pool?.allocations || [])
+      .filter(({ Central, Secondary }) => Central && Secondary)
+      .map(item => {
+        const central = item.Central;
+        const secondary = item.Secondary;
+        const centralInfo = getInfoForBrand(brandToInfo, central.brand);
+        const secondaryInfo = getInfoForBrand(brandToInfo, secondary.brand);
+        const centralValString = stringifyNat(
+          central.value,
+          centralInfo.decimalPlaces,
+          PLACES_TO_SHOW,
+        );
+        const secondaryValString = stringifyNat(
+          secondary.value,
+          secondaryInfo.decimalPlaces,
+          PLACES_TO_SHOW,
+        );
+        return {
+          Central: { info: centralInfo, value: centralValString },
+          Secondary: { info: secondaryInfo, value: secondaryValString },
+        };
+      });
   }, [poolAllocations]);
   const newUserPairs = useMemo(() => {
     return pool.userPairs
