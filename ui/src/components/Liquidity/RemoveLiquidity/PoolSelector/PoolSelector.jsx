@@ -1,13 +1,23 @@
+import { useApplicationContext } from 'context/Application';
 import PoolContext from 'context/PoolContext';
 import React, { useContext } from 'react';
+import { makeDisplayFunctions } from 'utils/helpers';
 
 const PoolSelector = ({ setOpen }) => {
-  const [pool] = useContext(PoolContext);
+  const {
+    state: { brandToInfo, autoswap },
+  } = useApplicationContext();
+  const { centralBrand } = autoswap ?? {};
+  const { displayBrandPetname } = makeDisplayFunctions(brandToInfo);
+  const { brandToRemove } = useContext(PoolContext);
+
   return (
     <div className="flex justify-between">
       <h2 className="text-lg font-medium">
-        {pool?.selectRemove
-          ? `${pool?.selectRemove?.central?.info.petname} / ${pool?.selectRemove?.liquidity?.info.petname} Pool`
+        {brandToRemove
+          ? `${displayBrandPetname(centralBrand)} / ${displayBrandPetname(
+              brandToRemove,
+            )} Pool`
           : 'No Pool Selected'}
       </h2>
 
@@ -17,7 +27,7 @@ const PoolSelector = ({ setOpen }) => {
           setOpen(true);
         }}
       >
-        {pool?.selectRemove ? `Change Pool` : 'Choose'}
+        {brandToRemove ? `Change Pool` : 'Choose'}
       </a>
     </div>
   );

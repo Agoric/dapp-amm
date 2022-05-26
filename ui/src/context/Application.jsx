@@ -2,7 +2,10 @@ import React, { createContext, useContext, useReducer } from 'react';
 import 'json5';
 import 'utils/installSESLockdown';
 
-import { makeAsyncIterableFromNotifier as iterateNotifier } from '@agoric/notifier';
+import {
+  makeAsyncIterableFromNotifier as iterateNotifier,
+  makeNotifierFromAsyncIterable,
+} from '@agoric/notifier';
 import { E } from '@endo/eventual-send';
 
 import WalletConnection from '../components/components/WalletConnection';
@@ -11,10 +14,12 @@ import { dappConfig, refreshConfigFromWallet } from '../utils/config';
 import {
   reducer,
   defaultState,
-  setAssets,
+  setPurses,
   setAutoswap,
   setApproved,
   updateOffers,
+  setPoolState,
+  setLiquidityBrand,
 } from '../store/store';
 
 import {
@@ -34,21 +39,65 @@ export function useApplicationContext() {
   return useContext(ApplicationContext);
 }
 
+const watchPool = async (dispatch, ammAPI, brand) => {
+  const updatePoolState = value => {
+    console.log('updating pool state', brand, value);
+    dispatch(setPoolState({ brand, value }));
+  };
+  const poolUpdater = async () => {
+    const poolSubscription = await E(ammAPI).getPoolMetrics(brand);
+    const poolNotifier = makeNotifierFromAsyncIterable(poolSubscription);
+    for await (const value of iterateNotifier(poolNotifier)) {
+      updatePoolState(value);
+    }
+  };
+  poolUpdater().catch(err =>
+    console.error('Brand watcher exception', brand, err),
+  );
+};
+
+const fetchLiquidityBrand = async (poolBrand, dispatch, ammApi) => {
+  const { Liquidity } = await E(ammApi).getPoolAllocation(poolBrand);
+  if (Liquidity?.brand) {
+    dispatch(
+      setLiquidityBrand({ brand: poolBrand, liquidityBrand: Liquidity?.brand }),
+    );
+  }
+};
+
 const setupAMM = async (dispatch, brandToInfo, zoe, board, instanceID) => {
   const instance = await E(board).getValue(instanceID);
   const [ammAPI, terms] = await Promise.all([
     E(zoe).getPublicFacet(instance),
     E(zoe).getTerms(instance),
   ]);
-  // TODO this uses getTerms.brands, but that includes utility tokens, etc.
-  // We need a query/notifier for what are the pools supported
   const {
     brands: { Central: centralBrand },
   } = terms;
-  const poolBrands = await E(ammAPI).getAllPoolBrands();
-  console.log('AMM brands retrieved', centralBrand, poolBrands);
 
-  dispatch(setAutoswap({ instance, ammAPI, centralBrand, poolBrands }));
+  const [poolBrands, governedParams] = await Promise.all([
+    E(ammAPI).getAllPoolBrands(),
+    E(ammAPI).getGovernedParams(),
+  ]);
+  console.log('AMM brands:', centralBrand, poolBrands);
+  console.log('AMM governed params:', governedParams);
+  const poolFee = governedParams.PoolFee.value;
+  const protocolFee = governedParams.ProtocolFee.value;
+  dispatch(
+    setAutoswap({
+      instance,
+      ammAPI,
+      centralBrand,
+      poolBrands,
+      poolFee,
+      protocolFee,
+    }),
+  );
+  poolBrands.forEach(poolBrand => watchPool(dispatch, ammAPI, poolBrand));
+  poolBrands.forEach(poolBrand =>
+    fetchLiquidityBrand(poolBrand, dispatch, ammAPI),
+  );
+
   await storeAllBrandsFromTerms({
     dispatch,
     terms,
@@ -94,7 +143,7 @@ export default function Provider({ children }) {
     async function watchPurses() {
       const pn = E(walletP).getPursesNotifier();
       for await (const purses of iterateNotifier(pn)) {
-        dispatch(setAssets(purses));
+        dispatch(setPurses(purses));
       }
     }
     watchPurses().catch(err => console.error('got watchPurses err', err));

@@ -3,6 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <link name="unprocessed-script" content="lockdown.umd.js" />
+    <script>
+      window.addEventListener('unhandledrejection', ev => {
+        ev.stopImmediatePropagation();
+      });
+    </script>
     <link rel="icon" href="%PUBLIC_URL%/agoric-logo.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />

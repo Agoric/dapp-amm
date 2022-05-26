@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import { E } from '@endo/eventual-send';
 
 import { dappConfig } from '../../utils/config';
-import { setApproved, setConnected } from '../../store/store';
+import { setApproved } from '../../store/store';
 
 // Create a wrapper for agoric-wallet-connection that is specific to
 // the app's instance of React.
@@ -14,6 +14,7 @@ const WalletConnection = ({ setWalletP, dispatch }) => {
 
   const onWalletState = useCallback(ev => {
     const { walletConnection, state } = ev.detail;
+    console.log('wallet:', state);
     switch (state) {
       case 'idle': {
         // This is one of the only methods that the wallet connection facet allows.
@@ -29,11 +30,11 @@ const WalletConnection = ({ setWalletP, dispatch }) => {
         break;
       }
       case 'bridged': {
-        dispatch(setConnected(true));
         dispatch(setApproved(true));
         break;
       }
       case 'error': {
+        dispatch(setApproved(false));
         console.log('error', ev.detail);
         // In case of an error, reset to 'idle'.
         // Backoff or other retry strategies would go here instead of immediate reset.
