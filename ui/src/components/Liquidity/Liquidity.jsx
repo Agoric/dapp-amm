@@ -26,9 +26,9 @@ const Liquidity = () => {
   const liquidityHook = useState({ central: null, liquidity: null });
   const errorHook = useState(undefined);
   const [pool, setPool] = useContext(PoolContext);
-  // get state
   const { state } = useApplicationContext();
   const {
+    assets,
     brandToInfo,
     approved,
     autoswap: { ammAPI },
@@ -40,10 +40,7 @@ const Liquidity = () => {
   }, [brandToInfo, approved]);
   useEffect(() => {
     const getPool = async () => {
-      const poolAllocations = await getPoolAllocationService(
-        ammAPI,
-        state.assets,
-      );
+      const poolAllocations = await getPoolAllocationService(ammAPI, assets);
       if (poolAllocations.status === 200) {
         const { allocations } = poolAllocations;
         console.log('POOL ALLOCATIONS: ', allocations);
@@ -76,8 +73,8 @@ const Liquidity = () => {
 
       // further process userPairs to determine liquidity percentages
     };
-    state && state.assets && getPool();
-  }, [state.assets]);
+    assets && ammAPI && getPool();
+  }, [assets, ammAPI]);
 
   return (
     <AssetWrapper assetHook={liquidityHook}>
