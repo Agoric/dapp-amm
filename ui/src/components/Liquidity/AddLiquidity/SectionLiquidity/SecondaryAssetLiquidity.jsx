@@ -18,9 +18,8 @@ const SecondaryAssetLiquidity = ({
   const {
     state: { brandToInfo },
   } = useApplicationContext();
-  const { displayBrandIcon, displayBrandPetname } = makeDisplayFunctions(
-    brandToInfo,
-  );
+  const { displayBrandIcon, displayBrandPetname } =
+    makeDisplayFunctions(brandToInfo);
 
   const { brandToAdd, purseToAdd, setPurseIdToAdd } = useContext(PoolContext);
   const [purseDialogOpen, setPurseDialogOpen] = useState(false);

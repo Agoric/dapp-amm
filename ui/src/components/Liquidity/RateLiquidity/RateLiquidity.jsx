@@ -9,11 +9,8 @@ const RateLiquidity = ({ secondaryBrand }) => {
     state: { brandToInfo, autoswap, poolStates },
   } = useApplicationContext();
   const { centralBrand } = autoswap ?? {};
-  const {
-    displayBrandPetname,
-    displayAmount,
-    getDecimalPlaces,
-  } = makeDisplayFunctions(brandToInfo);
+  const { displayBrandPetname, displayAmount, getDecimalPlaces } =
+    makeDisplayFunctions(brandToInfo);
 
   const decimalPlaces = getDecimalPlaces(secondaryBrand);
   const unitAmount = AmountMath.make(

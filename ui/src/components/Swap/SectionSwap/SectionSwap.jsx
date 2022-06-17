@@ -14,9 +14,8 @@ const SectionSwap = ({ type, value, handleChange }) => {
   } = useApplicationContext();
   const { poolBrands, centralBrand } = autoswap ?? {};
 
-  const { displayBrandIcon, displayBrandPetname } = makeDisplayFunctions(
-    brandToInfo,
-  );
+  const { displayBrandIcon, displayBrandPetname } =
+    makeDisplayFunctions(brandToInfo);
   const {
     fromPurse,
     fromBrand,

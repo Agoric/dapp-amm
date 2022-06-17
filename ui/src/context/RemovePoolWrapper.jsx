@@ -16,9 +16,8 @@ const RemovePoolWrapper = ({ children }) => {
   const [removeErrors, setRemoveErrors] = useState(() => new Set());
   const [removeOfferId, setRemoveOfferId] = useState(walletOffers.length);
   const [removeToastId, setRemoveToastId] = useState('remove-liquidity');
-  const [removeButtonStatus, setRemoveButtonStatus] = useState(
-    'Confirm Withdrawal',
-  );
+  const [removeButtonStatus, setRemoveButtonStatus] =
+    useState('Confirm Withdrawal');
 
   const addRemoveError = error => {
     setRemoveErrors(prev => new Set(prev).add(error));

@@ -48,11 +48,8 @@ export const addLiquidityService = async (
   purses,
   pool,
 ) => {
-  const {
-    AMM_INSTALLATION_BOARD_ID,
-    AMM_INSTANCE_BOARD_ID,
-    CONTRACT_NAME,
-  } = dappConfig;
+  const { AMM_INSTALLATION_BOARD_ID, AMM_INSTANCE_BOARD_ID, CONTRACT_NAME } =
+    dappConfig;
   const liquidityBrand = pool.liquidityTokens.brand;
   let liquidityPurse = purses.find(purse => purse.brand === liquidityBrand);
 

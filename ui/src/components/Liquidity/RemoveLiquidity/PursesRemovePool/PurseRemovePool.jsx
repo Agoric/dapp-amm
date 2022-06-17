@@ -20,15 +20,11 @@ const PurseRemovePool = ({ type, amount }) => {
   const { centralBrand } = autoswap ?? {};
 
   const { centralPurseToUse, setCentralPurseIdToUse } = useContext(PoolContext);
-  const { purseToRemove, brandToRemove, setPurseIdToRemove } = useContext(
-    RemovePoolContext,
-  );
+  const { purseToRemove, brandToRemove, setPurseIdToRemove } =
+    useContext(RemovePoolContext);
 
-  const {
-    displayBrandPetname,
-    displayBrandIcon,
-    displayAmount,
-  } = makeDisplayFunctions(brandToInfo);
+  const { displayBrandPetname, displayBrandIcon, displayAmount } =
+    makeDisplayFunctions(brandToInfo);
 
   const brand = type === 'central' ? centralBrand : brandToRemove;
   const purse = type === 'central' ? centralPurseToUse : purseToRemove;

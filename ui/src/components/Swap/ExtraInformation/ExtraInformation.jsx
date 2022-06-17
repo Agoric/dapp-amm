@@ -16,11 +16,8 @@ const ExtraInformation = ({
     state: { brandToInfo },
   } = useApplicationContext();
 
-  const {
-    displayBrandPetname,
-    displayAmount,
-    getDecimalPlaces,
-  } = makeDisplayFunctions(brandToInfo);
+  const { displayBrandPetname, displayAmount, getDecimalPlaces } =
+    makeDisplayFunctions(brandToInfo);
   const decimalPlaces = getDecimalPlaces(fromBrand);
   const unitAmount = AmountMath.make(fromBrand, 10n ** BigInt(decimalPlaces));
   const unitPrice = floorMultiplyBy(unitAmount, exchangeRate);

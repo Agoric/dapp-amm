@@ -13,12 +13,10 @@ const CentralAssetLiquidity = ({ value, handleChange }) => {
     state: { autoswap, purses, brandToInfo },
   } = useApplicationContext();
   const { centralBrand } = autoswap ?? {};
-  const { displayBrandIcon, displayBrandPetname } = makeDisplayFunctions(
-    brandToInfo,
-  );
-  const { centralPurseToUse, setCentralPurseIdToUse, purseToAdd } = useContext(
-    PoolContext,
-  );
+  const { displayBrandIcon, displayBrandPetname } =
+    makeDisplayFunctions(brandToInfo);
+  const { centralPurseToUse, setCentralPurseIdToUse, purseToAdd } =
+    useContext(PoolContext);
 
   const [open, setOpen] = useState(false);
   const centralPurses = purses ? filterPursesByBrand(purses, centralBrand) : [];

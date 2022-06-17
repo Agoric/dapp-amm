@@ -9,11 +9,8 @@ const LiquidityPool = ({ brand, onAddClicked, onRemoveClicked }) => {
   const { purses, poolStates, liquidityBrands, brandToInfo } = state;
 
   const poolState = poolStates.get(brand);
-  const {
-    displayBrandPetname,
-    displayAmount,
-    displayPercent,
-  } = makeDisplayFunctions(brandToInfo);
+  const { displayBrandPetname, displayAmount, displayPercent } =
+    makeDisplayFunctions(brandToInfo);
 
   const liquidityBrand = liquidityBrands.get(brand);
   const totalUserLiquidityForBrand =

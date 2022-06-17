@@ -8,9 +8,8 @@ const AssetListItem = ({ brand }) => {
     state: { brandToInfo },
   } = useApplicationContext();
 
-  const { displayBrandIcon, displayBrandPetname } = makeDisplayFunctions(
-    brandToInfo,
-  );
+  const { displayBrandIcon, displayBrandPetname } =
+    makeDisplayFunctions(brandToInfo);
 
   return (
     <div

@@ -11,9 +11,8 @@ const PurseDialog = ({ purseOnly, brand, resetBrand, handlePurseSelected }) => {
   const {
     state: { brandToInfo, purses },
   } = useApplicationContext();
-  const { displayBrandPetname, displayBrandIcon } = makeDisplayFunctions(
-    brandToInfo,
-  );
+  const { displayBrandPetname, displayBrandIcon } =
+    makeDisplayFunctions(brandToInfo);
 
   if (!brand) return <SkeletonPurseDialog />;
 
