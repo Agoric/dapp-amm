@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import 'json5';
-import 'utils/installSESLockdown';
 
 import {
   makeAsyncIterableFromNotifier as iterateNotifier,
