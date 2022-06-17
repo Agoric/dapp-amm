@@ -111,7 +111,7 @@ const CentralAssetLiquidity = ({ value, handleChange }) => {
           Input
         </h3>
         <div className="flex gap-3 items-center">
-          <div className="w-12 h-12 rounded-full bg-gray-500">
+          <div className="w-12 h-12">
             <img src={displayBrandIcon(centralBrand)} />
           </div>
           <AssetSelector />

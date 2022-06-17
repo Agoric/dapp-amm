@@ -110,7 +110,14 @@ const AddLiquidity = ({ setOpen }) => {
             addAddError(Errors.NO_BRANDS);
           } else if (!centralPurseToUse || !purseToAdd) {
             addAddError(Errors.NO_PURSES);
-          } else if (!(secondaryAmount && centralAmount)) {
+          } else if (
+            !(
+              secondaryAmount &&
+              centralAmount &&
+              centralAmount.value > 0n &&
+              secondaryAmount.value > 0n
+            )
+          ) {
             addAddError(Errors.NO_AMOUNTS);
           } else {
             handleAddLiquidity();

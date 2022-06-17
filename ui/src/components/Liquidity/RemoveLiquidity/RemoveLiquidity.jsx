@@ -53,6 +53,7 @@ const RemoveLiquidity = ({ setOpen }) => {
       return;
     } else if (!brandToRemove) {
       addRemoveError(Errors.NO_BRANDS);
+      return;
     } else if (!(centralPurseToUse && purseToRemove)) {
       addRemoveError(Errors.NO_PURSES);
       return;
