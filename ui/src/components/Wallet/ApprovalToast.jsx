@@ -40,6 +40,9 @@ function ApprovalToast() {
           setId(toast(component, properties));
         }
       }
+      if (state.approved && toast.isActive(Id)) {
+        toast.dismiss(Id);
+      }
     }
   }, [state.approved]);
   return <></>;

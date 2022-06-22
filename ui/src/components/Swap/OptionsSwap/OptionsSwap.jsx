@@ -4,7 +4,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 const OptionsSwap = ({ slippage, setSlippage }) => {
-  // TODO (ahmed): add validation to give error on slippage < 0 & > 10
   const slippageToolTip =
     'With Slippage Tolerance, you can set the maximum % of price movement you will accept. If exceeded, your order will not execute.';
   return (
@@ -45,13 +44,7 @@ const OptionsSwap = ({ slippage, setSlippage }) => {
             className=" p-2 pr-5 focus:outline-none bg-gray-100 rounded-sm"
             placeholder="0.5"
             onChange={({ target }) => {
-              if (target.value > 5) {
-                setSlippage(5);
-              } else if (target.value < 0.1) {
-                setSlippage(0.1);
-              } else {
-                setSlippage(target.value);
-              }
+              setSlippage(target.value);
             }}
             value={slippage}
             min="0.1"

@@ -1,28 +1,45 @@
+import { AmountMath, AssetKind } from '@agoric/ertp';
 import { useApplicationContext } from 'context/Application';
-import React, { useMemo } from 'react';
+import React, { useState } from 'react';
+import { makeDisplayFunctions } from 'utils/helpers';
+import { parseAsValue, stringifyValue } from '@agoric/ui-components';
 
 function CustomInput({
   value,
-  handleChange,
-  asset,
-  type,
-  rateAvailable,
-  useCase,
+  onChange,
+  showMaxButton,
+  purse,
+  disabled,
+  brand,
 }) {
-  const { state } = useApplicationContext();
-  const { assets } = state;
+  const {
+    state: { brandToInfo },
+  } = useApplicationContext();
+  const { displayAmount, getDecimalPlaces } = makeDisplayFunctions(brandToInfo);
 
-  const balance = useMemo(() => {
-    const purse = assets
-      .map(({ purses }) => purses)
-      .flat()
-      .find(({ name }) => name === asset[type]?.purse?.name);
-    return purse?.balance;
-  }, [assets, asset]);
+  const decimalPlaces = (brand && getDecimalPlaces(brand)) || 0;
+  const onMax = () => purse && onChange(purse.value);
 
-  const onMax = () => handleChange({ target: { value: balance } });
+  const amountString = stringifyValue(value, AssetKind.NAT, decimalPlaces, 4);
+  const [fieldString, setFieldString] = useState(
+    value === null ? '0' : amountString,
+  );
 
-  const showMaxButton = type === 'from' && balance;
+  const currentAmount = purse
+    ? displayAmount(AmountMath.make(purse.brand, purse.value), 4)
+    : '0.0';
+
+  const handleInputChange = ev => {
+    const str = ev.target.value.replace('-', '').replace('e', '');
+    setFieldString(str);
+    const parsed = parseAsValue(str, AssetKind.NAT, decimalPlaces);
+    onChange(parsed);
+  };
+
+  const displayString =
+    value === parseAsValue(fieldString, AssetKind.NAT, decimalPlaces)
+      ? fieldString
+      : amountString;
 
   return (
     <div className="relative flex-grow">
@@ -32,7 +49,7 @@ function CustomInput({
             className={
               'bg-transparent hover:bg-gray-100 text-[#3BC7BE] font-semibold py-[3px] px-1 border border-[#3BC7BE] rounded text-xs leading-3'
             }
-            disabled={rateAvailable}
+            disabled={disabled}
             onClick={onMax}
           >
             Max
@@ -42,23 +59,17 @@ function CustomInput({
       <input
         type="number"
         placeholder="0.0"
-        value={value}
-        onChange={handleChange}
+        value={displayString}
+        onChange={handleInputChange}
         className={`rounded-sm bg-white bg-opacity-100 text-xl p-3 leading-6 w-full hover:outline-none focus:outline-none border-none ${
           showMaxButton ? 'pl-[52px]' : 'pl-[12px]'
         }`}
-        disabled={
-          useCase === 'swap'
-            ? rateAvailable || !asset.to || !asset.from
-            : rateAvailable || !asset.central || !asset.secondary
-        }
+        disabled={disabled || !purse}
         min="0"
-        max="10000000"
       />
-      {asset[type]?.purse && (
-        <div className="absolute right-3 top-1 text-gray-400 flex flex-col text-right text-sm bg-white">
-          <div>Balance: {balance}</div>
-          <div>~ ${asset[type].purse.balanceUSD}</div>
+      {purse && (
+        <div className="absolute right-1 top-0 text-gray-400 flex flex-col text-right text-sm">
+          <div>Balance: {currentAmount}</div>
         </div>
       )}
     </div>

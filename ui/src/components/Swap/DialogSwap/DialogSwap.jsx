@@ -1,27 +1,28 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { FiX } from 'react-icons/fi';
 import AssetDialog from './AssetDialog';
 import PurseDialog from './PurseDialog/PurseDialog';
 
-const DialogSwap = ({ open, handleClose, type, asset, purseOnly }) => {
-  const [selectedAsset, setSelectedAsset] = useState({});
-
-  useEffect(() => {
-    if (asset) setSelectedAsset({ ...selectedAsset, [type]: asset });
-  }, [asset]);
+const DialogSwap = ({
+  open,
+  handleClose,
+  brands,
+  selectedBrand,
+  handleBrandSelected,
+  handlePurseSelected,
+  purseOnly,
+}) => {
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-          key={
-            selectedAsset?.[type] || purseOnly ? 'purseDialog' : 'assetDialog'
-          }
+          key={selectedBrand || purseOnly ? 'purseDialog' : 'assetDialog'}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed top-0 left-0 w-screen  h-screen bg-black bg-opacity-10 flex items-center justify-center px-4 py-6 z-50"
+          className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-10 flex items-center justify-center px-4 py-6 z-50"
         >
           <div className="absolute  w-full h-full " onClick={handleClose} />
           <motion.div
@@ -37,16 +38,18 @@ const DialogSwap = ({ open, handleClose, type, asset, purseOnly }) => {
                 onClick={handleClose}
               />
             </div>
-            {selectedAsset?.[type] || purseOnly ? (
+            {selectedBrand || purseOnly ? (
               <PurseDialog
-                handleClose={handleClose}
-                type={type}
                 purseOnly={purseOnly}
-                setSelectedAsset={setSelectedAsset}
-                selectedAsset={selectedAsset}
+                brand={selectedBrand}
+                resetBrand={() => handleBrandSelected(null)}
+                handlePurseSelected={handlePurseSelected}
               />
             ) : (
-              <AssetDialog type={type} setSelectedAsset={setSelectedAsset} />
+              <AssetDialog
+                handleBrandSelected={handleBrandSelected}
+                brands={brands}
+              />
             )}
           </motion.div>
         </motion.div>

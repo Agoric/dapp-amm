@@ -1,8 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import clsx from 'clsx';
 import Loader from 'react-loader-spinner';
 import { toast } from 'react-toastify';
-import AssetContext from 'context/AssetContext';
 import { useApplicationContext } from 'context/Application';
 import { FiCheck, FiArrowDown } from 'react-icons/fi';
 import { BiErrorCircle } from 'react-icons/bi';
@@ -10,133 +9,118 @@ import { motion } from 'framer-motion';
 
 import { removeLiquidityService } from 'services/liquidity.service';
 
+import PoolContext, {
+  defaultToastProperties,
+  Errors,
+} from 'context/PoolContext';
+import { makeDisplayFunctions } from 'utils/helpers';
+import { makeRatio } from '@agoric/zoe/src/contractSupport';
+import RemovePoolContext from 'context/RemovePoolContext';
 import AmountToRemove from './AmountToRemove';
 import PoolSelector from './PoolSelector/PoolSelector';
 import PursesRemovePool from './PursesRemovePool/PursesRemovePool';
 
-const RemoveLiquidity = props => {
-  const [error, setError] = useState(false);
-  const [asset] = useContext(AssetContext);
-  const [amount, setAmount] = useState('');
-  const [validated, setValidated] = useState(false);
-  const [removed, setRemoved] = useState(false);
-
+const RemoveLiquidity = ({ setOpen }) => {
+  const { centralPurseToUse } = useContext(PoolContext);
+  const {
+    purseToRemove,
+    brandToRemove,
+    removed,
+    addRemoveError,
+    setRemoved,
+    amountToRemove,
+    setRemoveToastId,
+    setRemoveOfferId,
+    setAmountToRemove,
+    removeButtonStatus,
+    removeErrors,
+  } = useContext(RemovePoolContext);
   const { state, walletP } = useApplicationContext();
-  const [Id, setId] = useState('swap');
 
   const {
     autoswap: { ammAPI },
     purses,
     walletOffers,
+    poolStates,
+    brandToInfo,
+    liquidityBrands,
   } = state;
-  const [currentOfferId, setCurrentOfferId] = useState(walletOffers.length);
-  const [wallet, setWallet] = useState(false);
-  const [removeButtonStatus, setRemoveButtonStatus] = useState(
-    'Confirm Withdrawal',
-  );
-  const defaultProperties = {
-    position: 'top-right',
-    autoClose: 3000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    containerId: 'Info',
-  };
-  useEffect(() => {
-    if (removed && wallet) {
-      const removeStatus = walletOffers[currentOfferId]?.status;
-      if (removeStatus === 'accept') {
-        setRemoveButtonStatus('removed');
-        toast.update(Id, {
-          render: 'Assets successfully swapped',
-          type: toast.TYPE.SUCCESS,
-          ...defaultProperties,
-        });
-      } else if (removeStatus === 'decline') {
-        setRemoveButtonStatus('declined');
-        setId(
-          toast.update(Id, {
-            render: 'Swap declined by User',
-            type: toast.TYPE.ERROR,
-            ...defaultProperties,
-          }),
-        );
-      } else if (walletOffers[currentOfferId]?.error) {
-        setRemoveButtonStatus('rejected');
-        setId(
-          toast.update(Id, {
-            render: 'Swap offer rejected by Wallet',
-            type: toast.TYPE.WARNING,
-            ...defaultProperties,
-          }),
-        );
-      }
-      if (
-        removeStatus === 'accept' ||
-        removeStatus === 'decline' ||
-        walletOffers[currentOfferId]?.error
-      ) {
-        setTimeout(() => {
-          setRemoved(false);
-          setRemoveButtonStatus('Confirm Withdrawal');
-        }, 3000);
-      }
-    }
-  }, [walletOffers[currentOfferId]]);
+  const poolState = poolStates.get(brandToRemove);
 
-  const handleRemovePool = () => {
-    if (!asset.centralRemove && !asset.secondaryRemove) {
-      setError('Please select purses first');
+  const handleRemovePool = async () => {
+    if (removed) {
+      addRemoveError(Errors.IN_PROGRESS);
       return;
-    } else if (!amount) {
-      setError('Please enter the amount first');
+    } else if (!brandToRemove) {
+      addRemoveError(Errors.NO_BRANDS);
+      return;
+    } else if (!(centralPurseToUse && purseToRemove)) {
+      addRemoveError(Errors.NO_PURSES);
+      return;
+    } else if (!amountToRemove) {
+      addRemoveError(Errors.NO_AMOUNTS);
       return;
     }
     setRemoved(true);
-    setId(
+    setRemoveToastId(
       toast('Please approve the offer in your wallet.', {
-        ...defaultProperties,
+        ...defaultToastProperties,
         type: toast.TYPE.INFO,
         progress: undefined,
         hideProgressBar: true,
         autoClose: false,
       }),
     );
-    setCurrentOfferId(walletOffers.length);
-    const removeLiquidityResp =
-      asset.centralRemove &&
-      asset.secondaryRemove &&
-      removeLiquidityService(
-        asset.centralRemove,
-        asset.secondaryRemove,
-        amount,
-        purses,
-        ammAPI,
-        walletP,
-      );
-
-    if (removeLiquidityResp.status === 200) {
-      console.log(removeLiquidityResp.message);
-    } else {
-      console.error(removeLiquidityResp);
-    }
-    setWallet(true);
-    // reset values
-    // setAsset({ centralRemove: undefined, secondaryRemove: undefined });
-    // setAmount('');
+    setRemoveOfferId(walletOffers.length);
+    await removeLiquidityService(
+      centralPurseToUse,
+      purseToRemove,
+      amountToRemove,
+      purses,
+      ammAPI,
+      walletP,
+      poolState,
+    );
   };
 
-  useEffect(() => {
-    (amount || (asset?.centralRemove && asset?.secondaryRemove)) &&
-      setError(null);
+  const { displayPercent } = makeDisplayFunctions(brandToInfo);
 
-    setValidated(false);
-    amount &&
-      asset?.centralRemove?.purse &&
-      asset?.secondaryRemove?.purse &&
-      setValidated(true);
-  }, [amount, asset]);
+  const liquidityBrand = liquidityBrands.get(brandToRemove);
+  const totalUserLiquidityForBrand =
+    liquidityBrand &&
+    (purses ?? [])
+      .filter(({ brand: purseBrand }) => purseBrand === liquidityBrand)
+      .map(({ value }) => value)
+      .reduce((prev, cur) => prev + cur, 0n);
+  const totalPoolTokens =
+    totalUserLiquidityForBrand &&
+    poolState &&
+    (poolState.liquidityTokens.value < totalUserLiquidityForBrand
+      ? totalUserLiquidityForBrand
+      : poolState.liquidityTokens.value);
+  const userPoolSharePercent =
+    (liquidityBrand &&
+      totalUserLiquidityForBrand &&
+      totalPoolTokens &&
+      displayPercent(
+        makeRatio(
+          totalUserLiquidityForBrand,
+          liquidityBrand,
+          totalPoolTokens,
+          liquidityBrand,
+        ),
+        7,
+      )) ||
+    '0.0000000';
+
+  const errorsToRender = [];
+  removeErrors.forEach(e => {
+    errorsToRender.push(
+      <motion.h3 key={e} layout className="text-red-600">
+        {e}
+      </motion.h3>,
+    );
+  });
 
   return (
     <motion.div
@@ -145,26 +129,26 @@ const RemoveLiquidity = props => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <PoolSelector {...props} />
+      <PoolSelector setOpen={setOpen} />
       <div className="flex flex-col  gap-4 relative">
         <AmountToRemove
-          value={amount}
-          setValue={setAmount}
-          poolShare={asset?.secondaryRemove?.liquidityInfo?.User?.share}
+          value={amountToRemove}
+          setValue={setAmountToRemove}
+          poolShare={userPoolSharePercent}
         />
         <FiArrowDown
           size={30}
           className={
             'p-1 bg-alternative text-3xl absolute left-6 position-swap-icon-remove border-4 border-white'
           }
-          style={{ top: asset.secondaryRemove ? '48.5%' : '' }}
+          style={{ top: '48.5%' }}
         />
-        <PursesRemovePool amount={amount} />
+        <PursesRemovePool amount={amountToRemove} />
       </div>
       <button
         className={clsx(
           'bg-gray-100 hover:bg-gray-200 text-xl  font-medium p-3  uppercase',
-          validated
+          !removeErrors.size || removed
             ? 'bg-primary hover:bg-primaryDark text-white'
             : 'text-gray-500',
         )}
@@ -190,7 +174,7 @@ const RemoveLiquidity = props => {
           <div className="text-white">{removeButtonStatus}</div>
         </motion.div>
       </button>
-      {error && <h3 className="text-red-600">{error}</h3>}
+      {errorsToRender}
     </motion.div>
   );
 };
