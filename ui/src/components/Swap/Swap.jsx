@@ -52,22 +52,15 @@ const Swap = () => {
   const { state, walletP } = useApplicationContext();
   const {
     walletOffers,
-    autoswap,
+    poolFee,
+    protocolFee,
     purses,
-    liquidityBrands,
     poolStates,
     brandToInfo,
+    central: centralBrand,
   } = state;
-  const { ammAPI, poolBrands, centralBrand, poolFee, protocolFee } =
-    autoswap ?? {};
   makeDisplayFunctions(brandToInfo);
-  const poolCount = poolBrands?.length;
-  const assetsLoaded =
-    centralBrand &&
-    poolBrands &&
-    purses &&
-    liquidityBrands.size === poolCount &&
-    poolStates.size === poolCount;
+  const assetsLoaded = purses && poolStates?.size;
 
   const calcReceiveAtLeast = slippageToUse => {
     if (!fromAmount || !toAmount || !fromBrand || !toBrand) return null;
@@ -100,7 +93,6 @@ const Swap = () => {
     setSwapped(true);
     makeSwapOffer(
       walletP,
-      ammAPI,
       fromPurse,
       fromAmount.value,
       toPurse,

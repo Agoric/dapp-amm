@@ -12,9 +12,8 @@ import PoolContext, { defaultToastProperties, Errors } from './PoolContext';
 
 const PoolWrapper = ({ children }) => {
   const {
-    state: { purses, autoswap, poolStates, walletOffers },
+    state: { purses, central: centralBrand, poolStates, walletOffers },
   } = useApplicationContext();
-  const { centralBrand } = autoswap ?? {};
 
   const [brandToAdd, setBrandToAdd] = useState(null);
   const [purseIdToAdd, setPurseIdToAdd] = useState(null);

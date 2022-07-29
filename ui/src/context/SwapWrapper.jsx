@@ -9,9 +9,15 @@ import { useApplicationContext } from './Application';
 
 const PoolWrapper = ({ children }) => {
   const {
-    state: { purses, walletOffers, poolStates, autoswap },
+    state: {
+      purses,
+      walletOffers,
+      poolStates,
+      central: centralBrand,
+      poolFee,
+      protocolFee,
+    },
   } = useApplicationContext();
-  const { centralBrand, poolFee, protocolFee } = autoswap ?? {};
 
   const [fromBrand, setFromBrand] = useState(null);
   const [toBrand, setToBrand] = useState(null);
@@ -169,6 +175,7 @@ const PoolWrapper = ({ children }) => {
       setToAmount(null);
       return;
     }
+    console.log('poolFee', poolFee, 'protocolFee', protocolFee);
     const estimator = makeEstimator(centralBrand, {
       poolFeeBP: poolFee,
       protocolFeeBP: protocolFee,
@@ -188,6 +195,7 @@ const PoolWrapper = ({ children }) => {
       setFromAmount(null);
       return;
     }
+    console.log('poolFee', poolFee, 'protocolFee', protocolFee);
     const estimator = makeEstimator(centralBrand, {
       poolFeeBP: poolFee,
       protocolFeeBP: protocolFee,

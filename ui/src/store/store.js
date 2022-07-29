@@ -16,6 +16,10 @@ export const {
     setError,
     setPoolState,
     setLiquidityBrand,
+    setPoolBrands,
+    setCentral,
+    setPoolFee,
+    setProtocolFee,
   },
 } = autodux({
   slice: 'treasury',
@@ -27,8 +31,11 @@ export const {
     assets: [],
     walletOffers: [],
     error: {},
+    central: null,
     poolStates: new Map(),
     liquidityBrands: new Map(),
+    poolFee: null,
+    protocolFee: null,
   },
   actions: {
     updateOffers: (state, offers) => {
