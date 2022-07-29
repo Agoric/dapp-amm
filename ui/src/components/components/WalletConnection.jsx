@@ -46,10 +46,7 @@ const WalletConnection = ({ setWalletP, dispatch }) => {
   }, []);
 
   return (
-    <AgoricWalletConnection
-      onState={onWalletState}
-      style={{ display: 'none' }}
-    />
+    <AgoricWalletConnection onState={onWalletState} useLocalStorage={true} />
   );
 };
 

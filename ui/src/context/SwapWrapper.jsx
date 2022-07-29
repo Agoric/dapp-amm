@@ -9,9 +9,15 @@ import { useApplicationContext } from './Application';
 
 const PoolWrapper = ({ children }) => {
   const {
-    state: { purses, walletOffers, poolStates, autoswap },
+    state: {
+      purses,
+      walletOffers,
+      poolStates,
+      central: centralBrand,
+      poolFee,
+      protocolFee,
+    },
   } = useApplicationContext();
-  const { centralBrand, poolFee, protocolFee } = autoswap ?? {};
 
   const [fromBrand, setFromBrand] = useState(null);
   const [toBrand, setToBrand] = useState(null);

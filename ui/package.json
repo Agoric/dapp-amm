@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@agoric/assert": "dev",
+    "@agoric/casting": "dev",
     "@agoric/ertp": "dev",
     "@agoric/nat": "^4.1.0",
     "@agoric/notifier": "dev",
@@ -30,7 +31,7 @@
     "react-icons": "^4.2.0",
     "react-loader-spinner": "^4.0.0",
     "react-toastify": "^8.0.0",
-    "ses": "^0.12.7",
+    "ses": "0.15.17",
     "uuid": "^8.3.2",
     "web-vitals": "^1.0.1"
   },
@@ -41,11 +42,11 @@
     "lint:eslint": "eslint '**/*.{js,jsx}'",
     "lint-fix": "eslint --fix '**/*.{js,jsx}'",
     "configure": "node use-on-chain-config",
-    "start": "yarn build:ses && react-scripts start",
-    "build": "yarn build:ses && react-scripts build",
-    "test": "react-scripts test --passWithNoTests",
-    "build:ses": "cp ../node_modules/ses/dist/lockdown.umd.js public/",
-    "build:react": "yarn configure; react-scripts build",
+    "start": "yarn build:ses && react-app-rewired start",
+    "build": "yarn build:ses && react-app-rewired build",
+    "test": "react-app-rewired test --passWithNoTests",
+    "build:ses": "cp ./node_modules/ses/dist/lockdown.umd.js public/",
+    "build:react": "yarn configure; react-app-rewired build",
     "eject": "react-scripts eject"
   },
   "browserslist": {
@@ -72,7 +73,8 @@
     "prettier": "^2.7.0",
     "react-scripts": "^5.0.1",
     "rimraf": "^3.0.2",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.14"
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.14",
+    "react-app-rewired": "^2.2.1"
   },
   "prettier": {
     "arrowParens": "avoid",
