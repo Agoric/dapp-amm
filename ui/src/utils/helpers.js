@@ -28,7 +28,7 @@ export const getLogoForBrandPetname = brandPetname => {
     case 'USDC':
       image = usdcLogo;
       break;
-    case 'ATOM':
+    case 'IbcATOM':
       image = atomLogo;
       break;
     default:
