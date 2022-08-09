@@ -51,7 +51,6 @@ const Swap = () => {
 
   const { state, walletP } = useApplicationContext();
   const {
-    walletOffers,
     poolFee,
     protocolFee,
     purses,
@@ -79,7 +78,7 @@ const Swap = () => {
 
   const receiveAtLeast = calcReceiveAtLeast(slippage);
 
-  const handleSwap = () => {
+  const handleSwap = async () => {
     setToastId(
       toast('Please approve the offer in your wallet.', {
         ...defaultToastProperties,
@@ -89,15 +88,15 @@ const Swap = () => {
         autoClose: false,
       }),
     );
-    setCurrentOfferId(walletOffers.length);
     setSwapped(true);
-    makeSwapOffer(
+    const offerId = await makeSwapOffer(
       walletP,
       fromPurse,
       fromAmount.value,
       toPurse,
       receiveAtLeast.value,
     );
+    setCurrentOfferId(offerId);
   };
 
   const switchToAndFrom = () => {
