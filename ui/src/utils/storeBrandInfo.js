@@ -50,7 +50,7 @@ export const storeAllBrandsFromTerms = async ({
         assetKind: displayInfos[i].assetKind,
         decimalPlaces,
         issuer: issuers[i],
-        petname: keywords[i] === 'Central' ? 'RUN' : keywords[i],
+        petname: keywords[i] === 'Central' ? 'IST' : keywords[i],
         brand,
       },
     ];
