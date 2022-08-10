@@ -61,7 +61,7 @@ const Liquidity = () => {
           <div className="flex flex-col justify-between gap-2 ">
             <h1 className="text-2xl font-semibold">Liquidity</h1>
             <h2 className="text-gray-500 ">
-              All liquidity pairs currently use RUN.
+              All liquidity pairs currently use IST.
             </h2>
           </div>
           <div>

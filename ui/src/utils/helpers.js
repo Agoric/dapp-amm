@@ -16,7 +16,7 @@ export const getLogoForBrandPetname = brandPetname => {
   // setting default image as agoric logo
   let image = placeHolderAgoric;
   switch (brandPetname) {
-    case 'RUN':
+    case 'IST':
       image = agoricLogo;
       break;
     case 'BLD':

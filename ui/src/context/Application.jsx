@@ -123,7 +123,7 @@ export default function Provider({ children }) {
   const retrySetup = async () => {
     await refreshConfigFromWallet(walletP);
     const {
-      RUN_ISSUER_BOARD_ID,
+      STABLE_ISSUER_BOARD_ID,
       AMM_INSTALLATION_BOARD_ID,
       AMM_INSTANCE_BOARD_ID,
       AMM_NAME,
@@ -166,7 +166,7 @@ export default function Provider({ children }) {
         AMM_INSTALLATION_BOARD_ID,
       ),
       E(walletP).suggestInstance(`${AMM_NAME}Instance`, AMM_INSTANCE_BOARD_ID),
-      E(walletP).suggestIssuer('RUN', RUN_ISSUER_BOARD_ID),
+      E(walletP).suggestIssuer('IST', STABLE_ISSUER_BOARD_ID),
     ]);
 
     watchOffers(dispatch);
