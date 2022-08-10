@@ -13,29 +13,20 @@ import atomLogo from '../assets/crypto-icons/atom-logo.png';
 import placeHolderAgoric from '../assets/placeholder-agoric.png';
 
 export const getLogoForBrandPetname = brandPetname => {
-  // setting default image as agoric logo
-  let image = placeHolderAgoric;
   switch (brandPetname) {
     case 'IST':
-      image = agoricLogo;
-      break;
+      return agoricLogo;
     case 'BLD':
-      image = bldLogo;
-      break;
+      return bldLogo;
     case 'LINK':
-      image = kirkLogo;
-      break;
+      return kirkLogo;
     case 'USDC':
-      image = usdcLogo;
-      break;
+      return usdcLogo;
     case 'ATOM':
-      image = atomLogo;
-      break;
+      return atomLogo;
     default:
-      break;
+      return placeHolderAgoric;
   }
-
-  return image;
 };
 
 export const getPurseAssetKind = purse =>
