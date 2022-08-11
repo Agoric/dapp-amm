@@ -12,7 +12,7 @@ const RemovePoolWrapper = ({ children }) => {
   const [brandToRemove, setBrandToRemove] = useState(null);
   const [purseIdToRemove, setPurseIdToRemove] = useState(null);
   const [removed, setRemoved] = useState(false);
-  const [amountToRemove, setAmountToRemove] = useState(null);
+  const [amountToRemove, setAmountToRemove] = useState('');
   const [removeErrors, setRemoveErrors] = useState(() => new Set());
   const [removeOfferId, setRemoveOfferId] = useState(walletOffers.length);
   const [removeToastId, setRemoveToastId] = useState('remove-liquidity');
@@ -33,7 +33,10 @@ const RemovePoolWrapper = ({ children }) => {
 
   useEffect(() => {
     if (removed) {
-      const removeStatus = walletOffers[removeOfferId]?.status;
+      const removeOffer = walletOffers.find(
+        ({ id, rawId }) => rawId === removeOfferId || id === removeOfferId,
+      );
+      const removeStatus = removeOffer?.status;
       if (removeStatus === 'accept') {
         setRemoveButtonStatus('removed');
         toast.update(removeToastId, {
@@ -50,7 +53,7 @@ const RemovePoolWrapper = ({ children }) => {
             ...defaultToastProperties,
           }),
         );
-      } else if (walletOffers[removeOfferId]?.error) {
+      } else if (removeOffer?.error) {
         setRemoveButtonStatus('rejected');
         setRemoveToastId(
           toast.update(removeToastId, {
@@ -63,15 +66,16 @@ const RemovePoolWrapper = ({ children }) => {
       if (
         removeStatus === 'accept' ||
         removeStatus === 'decline' ||
-        walletOffers[removeOfferId]?.error
+        removeOffer?.error
       ) {
+        setRemoveOfferId(null);
         setTimeout(() => {
           setRemoved(false);
           setRemoveButtonStatus('Confirm Withdrawal');
         }, 3000);
       }
     }
-  }, [walletOffers[removeOfferId]]);
+  }, [walletOffers]);
 
   const purseToRemove =
     purseIdToRemove &&

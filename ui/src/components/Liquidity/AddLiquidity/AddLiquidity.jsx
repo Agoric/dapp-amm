@@ -1,17 +1,21 @@
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import Loader from 'react-loader-spinner';
-import { FiCheck, FiPlus } from 'react-icons/fi';
+import { FiCheck } from 'react-icons/fi';
 import React, { useContext } from 'react';
 import clsx from 'clsx';
 import { BiErrorCircle } from 'react-icons/bi';
 
-import { addLiquidityService } from 'services/liquidity.service';
+import {
+  addLiquidityService,
+  createNewPurse,
+} from 'services/liquidity.service';
 import PoolContext, {
   Errors,
   defaultToastProperties,
 } from 'context/PoolContext';
 import { useApplicationContext } from 'context/Application';
+import { makeDisplayFunctions } from 'utils/helpers';
 import CentralAssetLiquidity from './SectionLiquidity/CentralAssetLiquidity';
 import SecondaryAssetLiquidity from './SectionLiquidity/SecondaryAssetLiquidity';
 import RateLiquidity from '../RateLiquidity/RateLiquidity';
@@ -36,11 +40,31 @@ const AddLiquidity = ({ setOpen }) => {
   } = useContext(PoolContext);
 
   const { state, walletP } = useApplicationContext();
-  const { walletOffers, autoswap, purses, poolStates } = state;
-  const { ammAPI } = autoswap ?? {};
+  const { purses, poolStates, brandToInfo } = state;
   const pool = poolStates.get(brandToAdd);
+  const liquidityTokenPurse =
+    pool && purses.find(({ brand }) => brand === pool.liquidityTokens.brand);
 
-  const handleAddLiquidity = () => {
+  const { displayBrandPetname } = makeDisplayFunctions(brandToInfo);
+
+  const handleAddLiquidity = async () => {
+    setShowAddLoader(true);
+    try {
+      const offerId = await addLiquidityService(
+        centralAmount,
+        centralPurseToUse,
+        secondaryAmount,
+        purseToAdd,
+        liquidityTokenPurse,
+        walletP,
+        pool,
+      );
+      setAddOfferId(offerId);
+    } catch (e) {
+      console.error('Failed to add liquidity offer', e);
+      setShowAddLoader(false);
+      return;
+    }
     setAddToastId(
       toast('Please approve the offer in your wallet.', {
         ...defaultToastProperties,
@@ -49,18 +73,6 @@ const AddLiquidity = ({ setOpen }) => {
         hideProgressBar: true,
         autoClose: false,
       }),
-    );
-    setAddOfferId(walletOffers.length);
-    setShowAddLoader(true);
-    addLiquidityService(
-      centralAmount,
-      centralPurseToUse,
-      secondaryAmount,
-      purseToAdd,
-      ammAPI,
-      walletP,
-      purses,
-      pool,
     );
   };
 
@@ -72,6 +84,24 @@ const AddLiquidity = ({ setOpen }) => {
       </motion.h3>,
     );
   });
+
+  const onAddIssuerClicked = e => {
+    e.preventDefault();
+    createNewPurse(walletP, displayBrandPetname(brandToAdd), 'board03125');
+  };
+
+  const purseMissingMessage = pool && !liquidityTokenPurse && (
+    <motion.h3 layout className="text-red-600">
+      No liquidity token purse found in wallet.{' '}
+      <a
+        href="#"
+        onClick={onAddIssuerClicked}
+        className="hover:underline text-blue-400"
+      >
+        Add Issuer
+      </a>
+    </motion.h3>
+  );
 
   return (
     <motion.div
@@ -85,10 +115,6 @@ const AddLiquidity = ({ setOpen }) => {
           value={centralAmount?.value}
           handleChange={handleCentralValueChange}
         />
-        <FiPlus
-          size="30"
-          className="transform-gpu rotate-90 p-1 bg-alternative text-3xl absolute left-6 position-swap-icon-liquidity border-4 border-white"
-        />
         <SecondaryAssetLiquidity
           value={secondaryAmount?.value}
           handleChange={handleSecondaryValueChange}
@@ -98,8 +124,8 @@ const AddLiquidity = ({ setOpen }) => {
       {exchangeRate && <RateLiquidity secondaryBrand={brandToAdd} />}
       <button
         className={clsx(
-          'bg-gray-100 hover:bg-gray-200 text-xl  font-medium p-3  uppercase flex justify-center',
-          !addErrors.size || showAddLoader
+          'bg-gray-100 hover:bg-gray-200 text-xl font-medium p-3 uppercase flex justify-center',
+          (!addErrors.size && (!pool || liquidityTokenPurse)) || showAddLoader
             ? 'bg-primary hover:bg-primaryDark text-white'
             : 'text-gray-500',
         )}
@@ -144,6 +170,7 @@ const AddLiquidity = ({ setOpen }) => {
           <div className="text-white">{addButtonStatus}</div>
         </motion.div>
       </button>
+      {purseMissingMessage}
       {errorsToRender}
     </motion.div>
   );

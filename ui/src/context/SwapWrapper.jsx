@@ -105,7 +105,6 @@ const PoolWrapper = ({ children }) => {
       const currentOffer = walletOffers.find(
         ({ id, rawId }) => rawId === currentOfferId || id === currentOfferId,
       );
-      console.log('CURRENT OFFER', currentOfferId, currentOffer);
       const swapStatus = currentOffer?.status;
       if (swapStatus === 'accept') {
         setSwapButtonStatus('Swapped');

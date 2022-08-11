@@ -4,15 +4,19 @@ import { makeDisplayFunctions } from 'utils/helpers';
 import { AmountMath } from '@agoric/ertp';
 import { makeRatio } from '@agoric/zoe/src/contractSupport';
 
-const LiquidityPool = ({ brand, onAddClicked, onRemoveClicked }) => {
+const LiquidityPool = ({
+  brand,
+  liquidityBrand,
+  onAddClicked,
+  onRemoveClicked,
+}) => {
   const { state } = useApplicationContext();
-  const { purses, poolStates, liquidityBrands, brandToInfo } = state;
+  const { purses, poolStates, brandToInfo } = state;
 
   const poolState = poolStates.get(brand);
   const { displayBrandPetname, displayAmount, displayPercent } =
     makeDisplayFunctions(brandToInfo);
 
-  const liquidityBrand = liquidityBrands.get(brand);
   const totalUserLiquidityForBrand =
     liquidityBrand &&
     (purses ?? [])

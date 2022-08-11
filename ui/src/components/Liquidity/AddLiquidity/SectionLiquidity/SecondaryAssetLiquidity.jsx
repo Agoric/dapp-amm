@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import React, { useState, useContext } from 'react';
 
-import { FiChevronDown } from 'react-icons/fi';
+import { FiChevronDown, FiPlus } from 'react-icons/fi';
 
 import DialogSwap from 'components/Swap/DialogSwap/DialogSwap';
 import CustomInput from 'components/components/CustomInput';
@@ -38,7 +38,11 @@ const SecondaryAssetLiquidity = ({
         purseOnly={true}
         handlePurseSelected={handlePurseSelected}
       />
-      <div className="flex flex-col bg-alternative p-4 rounded-sm gap-2 select-none">
+      <div className="relative flex flex-col bg-alternative p-4 rounded-sm gap-2 select-none">
+        <FiPlus
+          size="30"
+          className="transform-gpu rotate-90 p-1 bg-alternative absolute text-3xl -top-6 left-6 border-4 border-white"
+        />
         <h3 className="text-xs uppercase text-gray-500 tracking-wide font-medium select-none">
           Input
         </h3>
@@ -70,7 +74,7 @@ const SecondaryAssetLiquidity = ({
                 setPurseDialogOpen(true);
               }}
             >
-              <div className="flex  items-center justify-between">
+              <div className="flex items-center justify-between">
                 <h2 className="text-xl uppercase font-medium">
                   {displayBrandPetname(brandToAdd)}
                 </h2>

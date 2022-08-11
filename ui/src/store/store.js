@@ -15,7 +15,6 @@ export const {
     setPurses,
     setError,
     setPoolState,
-    setLiquidityBrand,
     setPoolBrands,
     setCentral,
     setPoolFee,
@@ -69,14 +68,6 @@ export const {
       return {
         ...state,
         poolStates: newPoolStates,
-      };
-    },
-    setLiquidityBrand: (state, { brand, liquidityBrand }) => {
-      const newLiquidityBrands = new Map(state.liquidityBrands.entries());
-      newLiquidityBrands.set(brand, liquidityBrand);
-      return {
-        ...state,
-        liquidityBrands: newLiquidityBrands,
       };
     },
   },

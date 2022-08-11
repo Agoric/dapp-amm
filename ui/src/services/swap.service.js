@@ -7,9 +7,7 @@ export const makeSwapOffer = async (
   outputPurse,
   outputValue,
 ) => {
-  console.log('PURSES:', inputPurse, outputPurse);
   const AMM_INSTANCE_BOARD_ID = 'board00917';
-
   const offerConfig = {
     invitationMaker: {
       description: 'makeSwapInInvitation',

@@ -15,9 +15,8 @@ import RemovePoolContext from 'context/RemovePoolContext';
 const PurseRemovePool = ({ type, amount }) => {
   const [open, setOpen] = useState(false);
   const {
-    state: { purses, autoswap, brandToInfo, poolStates, liquidityBrands },
+    state: { purses, central: centralBrand, brandToInfo, poolStates },
   } = useApplicationContext();
-  const { centralBrand } = autoswap ?? {};
 
   const { centralPurseToUse, setCentralPurseIdToUse } = useContext(PoolContext);
   const { purseToRemove, brandToRemove, setPurseIdToRemove } =
@@ -32,7 +31,7 @@ const PurseRemovePool = ({ type, amount }) => {
   const calcIncrement = () => {
     const pool = poolStates.get(brandToRemove);
     const totalLiquidity = pool.liquidityTokens.value;
-    const liquidityBrand = liquidityBrands.get(brandToRemove);
+    const liquidityBrand = pool.liquidityTokens.brand;
     const userLiquidity =
       liquidityBrand &&
       (purses ?? [])

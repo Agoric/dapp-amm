@@ -8,9 +8,8 @@ const PursesRemovePool = ({ amount }) => {
   const { setCentralPurseIdToUse } = useContext(PoolContext);
 
   const {
-    state: { autoswap, purses },
+    state: { central: centralBrand, purses },
   } = useApplicationContext();
-  const { centralBrand } = autoswap ?? {};
   const centralPurses = purses ? filterPursesByBrand(purses, centralBrand) : [];
 
   useEffect(() => {

@@ -9,32 +9,27 @@ import LiquidityPool from './LiquidityPool';
 
 const BodyLiquidityPools = ({ setTabIndex, handleClose }) => {
   const { state } = useApplicationContext();
-  const { autoswap, liquidityBrands, poolStates, purses } = state;
-
+  const { poolStates, purses } = state;
   const { setBrandToAdd } = useContext(PoolContext);
   const { setBrandToRemove } = useContext(RemovePoolContext);
-  const poolCount = autoswap?.poolBrands?.length;
-  const arePoolsLoaded =
-    purses &&
-    poolCount !== null &&
-    liquidityBrands.size === poolCount &&
-    poolStates.size === poolCount;
+  const arePoolsLoaded = purses && poolStates?.size;
 
   const myPools = arePoolsLoaded
     ? [...poolStates.entries()].filter(
-        ([brand]) =>
+        ([_brand, poolState]) =>
           purses.find(
             ({ brand: purseBrand, value }) =>
-              purseBrand === liquidityBrands.get(brand) && value > 0n,
+              purseBrand === poolState?.liquidityTokens?.brand && value > 0n,
           ) !== undefined,
       )
     : [];
+
   const allOtherPools = arePoolsLoaded
     ? [...poolStates.entries()].filter(
-        ([brand]) =>
+        ([_brand, poolState]) =>
           purses.find(
             ({ brand: purseBrand, value }) =>
-              purseBrand === liquidityBrands.get(brand) && value > 0n,
+              purseBrand === poolState?.liquidityTokens?.brand && value > 0n,
           ) === undefined,
       )
     : [];
@@ -57,14 +52,14 @@ const BodyLiquidityPools = ({ setTabIndex, handleClose }) => {
         <h2 className="text-lg text-gray-500 font-medium">Your Pools:</h2>
       </div>
       <motion.div className="flex flex-col p-5 gap-6 ">
-        {myPools.map(([brand]) => {
+        {myPools.map(([brand, poolState]) => {
           const onAddClicked = () => handleAddBrand(brand);
           const onRemoveClicked = () => handleRemoveBrand(brand);
-
           return (
             <LiquidityPool
               key={brand}
               brand={brand}
+              liquidityBrand={poolState?.liquidityTokens?.brand}
               onAddClicked={onAddClicked}
               onRemoveClicked={onRemoveClicked}
             />

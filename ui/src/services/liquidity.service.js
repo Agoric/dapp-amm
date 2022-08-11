@@ -7,77 +7,23 @@ import {
   calcValueToRemove,
 } from '@agoric/zoe/src/contractSupport';
 
-import { dappConfig } from '../utils/config.js';
-
-const createNewPurse = async (
-  liquidityBrand,
+export const createNewPurse = async (
   walletP,
-  instanceID,
-  contractName,
-) => {
-  console.log(instanceID, contractName);
-  const board = await E(walletP).getBoard();
-  const zoe = await E(walletP).getZoe();
-  const instance = await E(board).getValue(instanceID);
-  const issuers = await E(zoe).getIssuers(instance);
-  const liquidityBrandName = await E(liquidityBrand).getAllegedName();
+  secondaryBrandName,
+  liquidityIssuerId,
+) =>
+  E(walletP).suggestIssuer(`${secondaryBrandName}Liquidity`, liquidityIssuerId);
 
-  const liquidityIssuer = issuers[liquidityBrandName];
-
-  if (!liquidityIssuer) {
-    throw Error('Liquidity issuer not found in AMM');
-  }
-  const liquidityId = await E(board).getId(liquidityIssuer);
-  await E(walletP).suggestIssuer(liquidityBrandName, liquidityId);
-
-  // purseName of newly created purse will come out as array
-  const newName = [];
-  newName.push(contractName);
-  newName.push(liquidityBrandName);
-
-  return newName;
-};
-
-export const addLiquidityService = async (
+export const addLiquidityService = (
   centralAmount,
   centralPurse,
   secondaryAmount,
   secondaryValuePurse,
-  ammAPI,
+  liquidityPurse,
   walletP,
-  purses,
   pool,
 ) => {
-  const { AMM_INSTALLATION_BOARD_ID, AMM_INSTANCE_BOARD_ID, CONTRACT_NAME } =
-    dappConfig;
-  const liquidityBrand = pool.liquidityTokens.brand;
-  let liquidityPurse = purses.find(purse => purse.brand === liquidityBrand);
-
-  if (liquidityPurse) {
-    liquidityPurse = liquidityPurse.pursePetname;
-  } else {
-    liquidityPurse = await createNewPurse(
-      liquidityBrand,
-      walletP,
-      AMM_INSTANCE_BOARD_ID,
-      CONTRACT_NAME,
-    );
-  }
-
-  const id = `${Date.now()}`;
-  let invitation;
-  try {
-    invitation = await E(ammAPI).makeAddLiquidityInvitation();
-  } catch (error) {
-    return {
-      status: 500,
-      message:
-        error ||
-        error.message ||
-        error.error ||
-        'Something went wrong while creating invitation for add liquidity',
-    };
-  }
+  const AMM_INSTANCE_BOARD_ID = 'board00917';
 
   const secondaryToGive = calcSecondaryRequired(
     centralAmount.value,
@@ -93,45 +39,32 @@ export const addLiquidityService = async (
   );
 
   const offerConfig = {
-    id,
-    invitation,
-    installationHandleBoardId: AMM_INSTALLATION_BOARD_ID,
+    invitationMaker: {
+      description: 'makeAddLiquidityInvitation',
+    },
     instanceHandleBoardId: AMM_INSTANCE_BOARD_ID,
     proposalTemplate: {
       give: {
         Secondary: {
           pursePetname: secondaryValuePurse.pursePetname,
-          value: secondaryToGive,
+          value: Number(secondaryToGive),
         },
         Central: {
           pursePetname: centralPurse.pursePetname,
-          value: centralAmount.value,
+          value: Number(centralAmount.value),
         },
       },
       want: {
         Liquidity: {
-          pursePetname: liquidityPurse,
-          value: liquidityToWant,
+          pursePetname: liquidityPurse.pursePetname,
+          value: Number(liquidityToWant),
         },
       },
     },
   };
 
-  try {
-    await E(walletP).addOffer(offerConfig);
-  } catch (error) {
-    console.error(error);
-    return {
-      status: 500,
-      message:
-        error ||
-        error.message ||
-        error.error ||
-        'Something went wrong while sending remove liquidity offer',
-    };
-  }
-
-  return { status: 200, message: 'Add liquidity offer successfully sent' };
+  console.log('OFFER CONFIG', offerConfig);
+  return E(walletP).addOffer(offerConfig);
 };
 
 export const removeLiquidityService = async (
@@ -139,28 +72,13 @@ export const removeLiquidityService = async (
   secondaryPurse,
   amount,
   purses,
-  ammAPI,
   walletP,
   pool,
 ) => {
-  if (!centralPurse || !secondaryPurse) {
-    return {
-      status: 400,
-      message: 'Central or secondary purses not provided ',
-    };
-  }
-
-  const { AMM_INSTALLATION_BOARD_ID, AMM_INSTANCE_BOARD_ID } = dappConfig;
-
+  const AMM_INSTANCE_BOARD_ID = 'board00917';
   const liquidityBrand = pool.liquidityTokens.brand;
   const liquidityPurse = purses.find(purse => purse.brand === liquidityBrand);
-
-  if (!liquidityPurse) {
-    return {
-      status: 500,
-      message: 'Cannot find a purse for liquidity tokens brand',
-    };
-  }
+  assert(liquidityPurse, 'Cannot find a purse for liquidity tokens brand');
 
   // get central and secondary pool values
   const centralPool = pool.centralAmount;
@@ -192,65 +110,34 @@ export const removeLiquidityService = async (
     newUserLiquidityNAT,
   );
 
-  const id = `${Date.now()}`;
-
-  let invitation;
-  try {
-    invitation = await E(ammAPI).makeRemoveLiquidityInvitation();
-  } catch (error) {
-    return {
-      status: 500,
-      message:
-        error ||
-        error.message ||
-        error.error ||
-        'Something went wrong while creating invitation for remove liquidity',
-    };
-  }
-
   const offerConfig = {
-    id,
-    invitation,
-    installationHandleBoardId: AMM_INSTALLATION_BOARD_ID,
+    invitationMaker: {
+      description: 'makeRemoveLiquidityInvitation',
+    },
     instanceHandleBoardId: AMM_INSTANCE_BOARD_ID,
     proposalTemplate: {
       give: {
         Liquidity: {
           // The pursePetname identifies which purse we want to use
           pursePetname: liquidityPurse.pursePetname,
-          value: newUserLiquidityNAT,
+          value: Number(newUserLiquidityNAT),
         },
       },
       want: {
         Secondary: {
           // The pursePetname identifies which purse we want to use
           pursePetname: secondaryPurse.pursePetname,
-          value: secondaryTokenWant,
+          value: Number(secondaryTokenWant),
         },
         Central: {
           // The pursePetname identifies which purse we want to use
           pursePetname: centralPurse.pursePetname,
-          value: centralTokenWant,
+          value: Number(centralTokenWant),
         },
       },
     },
   };
 
-  console.info('REMOVE LIQUIDITY CONFIG: ', offerConfig);
-
-  try {
-    await E(walletP).addOffer(offerConfig);
-  } catch (error) {
-    console.error(error);
-    return {
-      status: 500,
-      message:
-        error ||
-        error.message ||
-        error.error ||
-        'Something went wrong while sending remove liquidity offer',
-    };
-  }
-
-  return { status: 200, message: 'Remove liquidity offer successfully sent' };
+  console.info('OFFER CONFIG: ', offerConfig);
+  return E(walletP).addOffer(offerConfig);
 };
