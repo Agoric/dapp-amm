@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import 'json5';
-
 import { makeAsyncIterableFromNotifier as iterateNotifier } from '@agoric/notifier';
 import { E } from '@endo/eventual-send';
-import { iterateLatest } from '@agoric/casting';
+import { iterateLatest, makeFollower, makeLeader } from '@agoric/casting';
 
+import { unserializer } from 'utils/boardIdUnserializer';
 import WalletConnection from '../components/components/WalletConnection';
 
 import {
@@ -17,6 +17,7 @@ import {
   setCentral,
   setPoolFee,
   setProtocolFee,
+  setLiquidityIssuerId,
 } from '../store/store';
 
 import { storePurseBrand } from '../utils/storeBrandInfo';
@@ -52,14 +53,31 @@ const watchPoolMetrics = async (dispatch, brand, i) => {
   }
 };
 
+const watchPoolInit = async (dispatch, brand, i, leader) => {
+  const f = makeFollower(`:published.amm.pool${i}.init`, leader, {
+    unserializer,
+  });
+
+  for await (const { value: state } of iterateLatest(f)) {
+    dispatch(
+      setLiquidityIssuerId({ brand, id: state.liquidityIssuerRecord.issuer }),
+    );
+  }
+};
+
 const watchMetrics = async dispatch => {
   const f = E(walletP).makeFollower(':published.amm.metrics');
+  const leader = makeLeader();
+
   for await (const { value: state } of iterateLatest(f)) {
-    state.XYK.forEach((brand, i) =>
+    state.XYK.forEach((brand, i) => {
       watchPoolMetrics(dispatch, brand, i).catch(err =>
         console.error('got watchPoolMetrics err', err),
-      ),
-    );
+      );
+      watchPoolInit(dispatch, brand, i, leader).catch(err =>
+        console.error('got watchPoolInit err', err),
+      );
+    });
   }
 };
 

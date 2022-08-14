@@ -19,6 +19,7 @@ export const {
     setCentral,
     setPoolFee,
     setProtocolFee,
+    setLiquidityIssuerId,
   },
 } = autodux({
   slice: 'treasury',
@@ -35,6 +36,7 @@ export const {
     liquidityBrands: new Map(),
     poolFee: null,
     protocolFee: null,
+    liquidityIssuerIds: new Map(),
   },
   actions: {
     updateOffers: (state, offers) => {
@@ -68,6 +70,14 @@ export const {
       return {
         ...state,
         poolStates: newPoolStates,
+      };
+    },
+    setLiquidityIssuerId: (state, { brand, id }) => {
+      const newLiquidityIssuerIds = new Map(state.liquidityIssuerIds.entries());
+      newLiquidityIssuerIds.set(brand, id);
+      return {
+        ...state,
+        liquidityIssuerIds: newLiquidityIssuerIds,
       };
     },
   },

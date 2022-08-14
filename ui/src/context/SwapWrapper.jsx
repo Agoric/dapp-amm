@@ -179,7 +179,6 @@ const PoolWrapper = ({ children }) => {
       setToAmount(null);
       return;
     }
-    console.log('poolFee', poolFee, 'protocolFee', protocolFee);
     const estimator = makeEstimator(centralBrand, {
       poolFeeBP: poolFee,
       protocolFeeBP: protocolFee,
@@ -199,7 +198,6 @@ const PoolWrapper = ({ children }) => {
       setFromAmount(null);
       return;
     }
-    console.log('poolFee', poolFee, 'protocolFee', protocolFee);
     const estimator = makeEstimator(centralBrand, {
       poolFeeBP: poolFee,
       protocolFeeBP: protocolFee,

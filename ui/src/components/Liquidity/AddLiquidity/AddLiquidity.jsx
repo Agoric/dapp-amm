@@ -40,8 +40,9 @@ const AddLiquidity = ({ setOpen }) => {
   } = useContext(PoolContext);
 
   const { state, walletP } = useApplicationContext();
-  const { purses, poolStates, brandToInfo } = state;
+  const { purses, poolStates, brandToInfo, liquidityIssuerIds } = state;
   const pool = poolStates.get(brandToAdd);
+  const liquidityIssuerId = liquidityIssuerIds.get(brandToAdd);
   const liquidityTokenPurse =
     pool && purses.find(({ brand }) => brand === pool.liquidityTokens.brand);
 
@@ -87,19 +88,21 @@ const AddLiquidity = ({ setOpen }) => {
 
   const onAddIssuerClicked = e => {
     e.preventDefault();
-    createNewPurse(walletP, displayBrandPetname(brandToAdd), 'board03125');
+    createNewPurse(walletP, displayBrandPetname(brandToAdd), liquidityIssuerId);
   };
 
   const purseMissingMessage = pool && !liquidityTokenPurse && (
     <motion.h3 layout className="text-red-600">
       No liquidity token purse found in wallet.{' '}
-      <a
-        href="#"
-        onClick={onAddIssuerClicked}
-        className="hover:underline text-blue-400"
-      >
-        Add Issuer
-      </a>
+      {liquidityIssuerId && (
+        <a
+          href="#"
+          onClick={onAddIssuerClicked}
+          className="hover:underline text-blue-400"
+        >
+          Add Issuer
+        </a>
+      )}
     </motion.h3>
   );
 
