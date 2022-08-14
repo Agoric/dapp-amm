@@ -7,6 +7,7 @@ export const makeSwapOffer = async (
   outputPurse,
   outputValue,
 ) => {
+  // TODO: Get this a better way?
   const AMM_INSTANCE_BOARD_ID = 'board00917';
   const offerConfig = {
     invitationMaker: {

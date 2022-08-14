@@ -23,6 +23,7 @@ export const addLiquidityService = (
   walletP,
   pool,
 ) => {
+  // TODO: Get this a better way?
   const AMM_INSTANCE_BOARD_ID = 'board00917';
 
   const secondaryToGive = calcSecondaryRequired(
@@ -75,6 +76,7 @@ export const removeLiquidityService = async (
   walletP,
   pool,
 ) => {
+  // TODO: Get this a better way?
   const AMM_INSTANCE_BOARD_ID = 'board00917';
   const liquidityBrand = pool.liquidityTokens.brand;
   const liquidityPurse = purses.find(purse => purse.brand === liquidityBrand);
