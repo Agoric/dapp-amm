@@ -7,11 +7,11 @@ export const makeSwapOffer = async (
   outputPurse,
   outputValue,
 ) => {
-  // TODO: Get this a better way?
+  // FIXME(https://github.com/Agoric/agoric-sdk/issues/5959): Read from chain.
   const AMM_INSTANCE_BOARD_ID = 'board00917';
   const offerConfig = {
     invitationMaker: {
-      description: 'makeSwapInInvitation',
+      method: 'makeSwapInInvitation',
     },
     instanceHandleBoardId: AMM_INSTANCE_BOARD_ID,
     proposalTemplate: {

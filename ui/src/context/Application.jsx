@@ -36,7 +36,6 @@ const watchOffers = dispatch => {
   async function offersUpdater() {
     const offerNotifier = E(walletP).getOffersNotifier();
     for await (const offers of iterateNotifier(offerNotifier)) {
-      console.log('======== OFFERS', offers);
       dispatch(updateOffers(offers));
     }
   }
@@ -45,10 +44,10 @@ const watchOffers = dispatch => {
 
 const watchPoolMetrics = async (dispatch, brand, i) => {
   const f = E(walletP).makeFollower(`:published.amm.pool${i}.metrics`);
-  for await (const { value: state } of iterateLatest(f)) {
-    dispatch(setPoolState({ brand, value: state }));
+  for await (const { value } of iterateLatest(f)) {
+    dispatch(setPoolState({ brand, value }));
     if (i === 0) {
-      dispatch(setCentral(state.centralAmount.brand));
+      dispatch(setCentral(value.centralAmount.brand));
     }
   }
 };
@@ -58,10 +57,11 @@ const watchPoolInit = async (dispatch, brand, i, leader) => {
     unserializer,
   });
 
-  for await (const { value: state } of iterateLatest(f)) {
+  for await (const { value } of iterateLatest(f)) {
     dispatch(
-      setLiquidityIssuerId({ brand, id: state.liquidityIssuerRecord.issuer }),
+      setLiquidityIssuerId({ brand, id: value.liquidityIssuerRecord.issuer }),
     );
+    return;
   }
 };
 
@@ -69,8 +69,8 @@ const watchMetrics = async dispatch => {
   const f = E(walletP).makeFollower(':published.amm.metrics');
   const leader = makeLeader();
 
-  for await (const { value: state } of iterateLatest(f)) {
-    state.XYK.forEach((brand, i) => {
+  for await (const { value } of iterateLatest(f)) {
+    value.XYK.forEach((brand, i) => {
       watchPoolMetrics(dispatch, brand, i).catch(err =>
         console.error('got watchPoolMetrics err', err),
       );
@@ -83,8 +83,8 @@ const watchMetrics = async dispatch => {
 
 const watchGovernedParams = async dispatch => {
   const f = E(walletP).makeFollower(':published.amm.governance');
-  for await (const { value: state } of iterateLatest(f)) {
-    const { PoolFee, ProtocolFee } = state.current;
+  for await (const { value } of iterateLatest(f)) {
+    const { PoolFee, ProtocolFee } = value.current;
     dispatch(setPoolFee(PoolFee.value));
     dispatch(setProtocolFee(ProtocolFee.value));
   }
@@ -92,7 +92,6 @@ const watchGovernedParams = async dispatch => {
 
 const watchPurses = async (dispatch, brandToInfo) => {
   const n = await E(walletP).getPursesNotifier();
-  console.log(n);
   for await (const purses of iterateNotifier(n)) {
     dispatch(setPurses(purses));
     purses.forEach(({ brand, displayInfo, brandPetname: petname }) =>
