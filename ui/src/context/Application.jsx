@@ -52,11 +52,12 @@ const watchPoolMetrics = async (dispatch, brand, i) => {
   }
 };
 
-const watchPoolInit = async (dispatch, brand, i, leader) => {
+const loadPoolInit = async (dispatch, brand, i, leader) => {
   const f = makeFollower(`:published.amm.pool${i}.init`, leader, {
     unserializer,
   });
 
+  // TODO: Find a more elegant way to read just the first value.
   for await (const { value } of iterateLatest(f)) {
     dispatch(
       setLiquidityIssuerId({ brand, id: value.liquidityIssuerRecord.issuer }),
@@ -74,8 +75,8 @@ const watchMetrics = async dispatch => {
       watchPoolMetrics(dispatch, brand, i).catch(err =>
         console.error('got watchPoolMetrics err', err),
       );
-      watchPoolInit(dispatch, brand, i, leader).catch(err =>
-        console.error('got watchPoolInit err', err),
+      loadPoolInit(dispatch, brand, i, leader).catch(err =>
+        console.error('got loadPoolInit err', err),
       );
     });
   }
