@@ -40,7 +40,8 @@ const AddLiquidity = ({ setOpen }) => {
   } = useContext(PoolContext);
 
   const { state, walletP } = useApplicationContext();
-  const { purses, poolStates, brandToInfo, liquidityIssuerIds } = state;
+  const { purses, poolStates, brandToInfo, liquidityIssuerIds, instanceId } =
+    state;
   const pool = poolStates.get(brandToAdd);
   const liquidityIssuerId = liquidityIssuerIds.get(brandToAdd);
   const liquidityTokenPurse =
@@ -59,6 +60,7 @@ const AddLiquidity = ({ setOpen }) => {
         liquidityTokenPurse,
         walletP,
         pool,
+        instanceId,
       );
       setAddOfferId(offerId);
     } catch (e) {

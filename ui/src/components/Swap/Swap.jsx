@@ -57,9 +57,10 @@ const Swap = () => {
     poolStates,
     brandToInfo,
     central: centralBrand,
+    instanceId,
   } = state;
   makeDisplayFunctions(brandToInfo);
-  const assetsLoaded = purses && poolStates?.size;
+  const assetsLoaded = instanceId && purses && poolStates?.size;
 
   const calcReceiveAtLeast = slippageToUse => {
     if (!fromAmount || !toAmount || !fromBrand || !toBrand) return null;
@@ -95,6 +96,7 @@ const Swap = () => {
       fromAmount.value,
       toPurse,
       receiveAtLeast.value,
+      instanceId,
     );
     setCurrentOfferId(offerId);
   };

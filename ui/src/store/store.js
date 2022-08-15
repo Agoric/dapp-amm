@@ -20,6 +20,7 @@ export const {
     setPoolFee,
     setProtocolFee,
     setLiquidityIssuerId,
+    setInstanceId,
   },
 } = autodux({
   slice: 'treasury',
@@ -37,6 +38,7 @@ export const {
     poolFee: null,
     protocolFee: null,
     liquidityIssuerIds: new Map(),
+    instanceId: null,
   },
   actions: {
     updateOffers: (state, offers) => {
