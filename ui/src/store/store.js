@@ -15,7 +15,11 @@ export const {
     setPurses,
     setError,
     setPoolState,
-    setLiquidityBrand,
+    setPoolBrands,
+    setCentral,
+    setPoolFee,
+    setProtocolFee,
+    setLiquidityIssuerId,
   },
 } = autodux({
   slice: 'treasury',
@@ -27,8 +31,12 @@ export const {
     assets: [],
     walletOffers: [],
     error: {},
+    central: null,
     poolStates: new Map(),
     liquidityBrands: new Map(),
+    poolFee: null,
+    protocolFee: null,
+    liquidityIssuerIds: new Map(),
   },
   actions: {
     updateOffers: (state, offers) => {
@@ -64,12 +72,12 @@ export const {
         poolStates: newPoolStates,
       };
     },
-    setLiquidityBrand: (state, { brand, liquidityBrand }) => {
-      const newLiquidityBrands = new Map(state.liquidityBrands.entries());
-      newLiquidityBrands.set(brand, liquidityBrand);
+    setLiquidityIssuerId: (state, { brand, id }) => {
+      const newLiquidityIssuerIds = new Map(state.liquidityIssuerIds.entries());
+      newLiquidityIssuerIds.set(brand, id);
       return {
         ...state,
-        liquidityBrands: newLiquidityBrands,
+        liquidityIssuerIds: newLiquidityIssuerIds,
       };
     },
   },

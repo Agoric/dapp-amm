@@ -1,30 +1,26 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import 'json5';
-
-import {
-  makeAsyncIterableFromNotifier as iterateNotifier,
-  makeNotifierFromAsyncIterable,
-} from '@agoric/notifier';
+import { makeAsyncIterableFromNotifier as iterateNotifier } from '@agoric/notifier';
 import { E } from '@endo/eventual-send';
+import { iterateLatest, makeFollower, makeLeader } from '@agoric/casting';
 
+import { unserializer } from 'utils/boardIdUnserializer';
 import WalletConnection from '../components/components/WalletConnection';
-import { dappConfig, refreshConfigFromWallet } from '../utils/config';
 
 import {
   reducer,
   defaultState,
   setPurses,
-  setAutoswap,
   setApproved,
   updateOffers,
   setPoolState,
-  setLiquidityBrand,
+  setCentral,
+  setPoolFee,
+  setProtocolFee,
+  setLiquidityIssuerId,
 } from '../store/store';
 
-import {
-  updateBrandPetnames,
-  storeAllBrandsFromTerms,
-} from '../utils/storeBrandInfo';
+import { storePurseBrand } from '../utils/storeBrandInfo';
 
 /* eslint-disable */
 let walletP;
@@ -34,147 +30,106 @@ export { walletP };
 
 export const ApplicationContext = createContext();
 
-export function useApplicationContext() {
-  return useContext(ApplicationContext);
-}
+export const useApplicationContext = () => useContext(ApplicationContext);
 
-const watchPool = async (dispatch, ammAPI, brand) => {
-  const updatePoolState = value => {
-    console.log('updating pool state', brand, value);
-    dispatch(setPoolState({ brand, value }));
-  };
-  const poolUpdater = async () => {
-    const poolSubscription = await E(ammAPI).getPoolMetrics(brand);
-    const poolNotifier = makeNotifierFromAsyncIterable(poolSubscription);
-    for await (const value of iterateNotifier(poolNotifier)) {
-      updatePoolState(value);
-    }
-  };
-  poolUpdater().catch(err =>
-    console.error('Brand watcher exception', brand, err),
-  );
-};
-
-const fetchLiquidityBrand = async (poolBrand, dispatch, ammApi) => {
-  const { Liquidity } = await E(ammApi).getPoolAllocation(poolBrand);
-  if (Liquidity?.brand) {
-    dispatch(
-      setLiquidityBrand({ brand: poolBrand, liquidityBrand: Liquidity?.brand }),
-    );
-  }
-};
-
-const setupAMM = async (dispatch, brandToInfo, zoe, board, instanceID) => {
-  const instance = await E(board).getValue(instanceID);
-  const [ammAPI, terms] = await Promise.all([
-    E(zoe).getPublicFacet(instance),
-    E(zoe).getTerms(instance),
-  ]);
-  const {
-    brands: { Central: centralBrand },
-  } = terms;
-
-  const [poolBrands, governedParams] = await Promise.all([
-    E(ammAPI).getAllPoolBrands(),
-    E(ammAPI).getGovernedParams(),
-  ]);
-  console.log('AMM brands:', centralBrand, poolBrands);
-  console.log('AMM governed params:', governedParams);
-  const poolFee = governedParams.PoolFee.value;
-  const protocolFee = governedParams.ProtocolFee.value;
-  dispatch(
-    setAutoswap({
-      instance,
-      ammAPI,
-      centralBrand,
-      poolBrands,
-      poolFee,
-      protocolFee,
-    }),
-  );
-  poolBrands.forEach(poolBrand => watchPool(dispatch, ammAPI, poolBrand));
-  poolBrands.forEach(poolBrand =>
-    fetchLiquidityBrand(poolBrand, dispatch, ammAPI),
-  );
-
-  await storeAllBrandsFromTerms({
-    dispatch,
-    terms,
-    brandToInfo,
-  });
-};
-
-function watchOffers(dispatch) {
+const watchOffers = dispatch => {
   async function offersUpdater() {
     const offerNotifier = E(walletP).getOffersNotifier();
     for await (const offers of iterateNotifier(offerNotifier)) {
-      console.log('======== OFFERS', offers);
       dispatch(updateOffers(offers));
     }
   }
   offersUpdater().catch(err => console.error('Offers watcher exception', err));
-}
+};
 
-/* eslint-disable complexity, react/prop-types */
-export default function Provider({ children }) {
+const watchPoolMetrics = async (dispatch, brand, i) => {
+  const f = E(walletP).makeFollower(`:published.amm.pool${i}.metrics`);
+  for await (const { value } of iterateLatest(f)) {
+    dispatch(setPoolState({ brand, value }));
+    if (i === 0) {
+      dispatch(setCentral(value.centralAmount.brand));
+    }
+  }
+};
+
+const loadPoolInit = async (dispatch, brand, i, leader) => {
+  const f = makeFollower(`:published.amm.pool${i}.init`, leader, {
+    unserializer,
+  });
+
+  // TODO: Find a more elegant way to read just the first value.
+  for await (const { value } of iterateLatest(f)) {
+    dispatch(
+      setLiquidityIssuerId({ brand, id: value.liquidityIssuerRecord.issuer }),
+    );
+    return;
+  }
+};
+
+const watchMetrics = async dispatch => {
+  const f = E(walletP).makeFollower(':published.amm.metrics');
+  const leader = makeLeader();
+
+  for await (const { value } of iterateLatest(f)) {
+    value.XYK.forEach((brand, i) => {
+      watchPoolMetrics(dispatch, brand, i).catch(err =>
+        console.error('got watchPoolMetrics err', err),
+      );
+      loadPoolInit(dispatch, brand, i, leader).catch(err =>
+        console.error('got loadPoolInit err', err),
+      );
+    });
+  }
+};
+
+const watchGovernedParams = async dispatch => {
+  const f = E(walletP).makeFollower(':published.amm.governance');
+  for await (const { value } of iterateLatest(f)) {
+    const { PoolFee, ProtocolFee } = value.current;
+    dispatch(setPoolFee(PoolFee.value));
+    dispatch(setProtocolFee(ProtocolFee.value));
+  }
+};
+
+const watchPurses = async (dispatch, brandToInfo) => {
+  const n = await E(walletP).getPursesNotifier();
+  for await (const purses of iterateNotifier(n)) {
+    dispatch(setPurses(purses));
+    purses.forEach(({ brand, displayInfo, brandPetname: petname }) =>
+      storePurseBrand({
+        dispatch,
+        brandToInfo,
+        brand,
+        petname,
+        displayInfo,
+      }),
+    );
+  }
+};
+
+const Provider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, defaultState);
   const { brandToInfo } = state;
 
   const retrySetup = async () => {
-    await refreshConfigFromWallet(walletP);
-    const {
-      STABLE_ISSUER_BOARD_ID,
-      AMM_INSTALLATION_BOARD_ID,
-      AMM_INSTANCE_BOARD_ID,
-      AMM_NAME,
-    } = dappConfig;
-    console.log('dappConfig', dappConfig);
+    watchPurses(dispatch, brandToInfo).catch(err =>
+      console.error('got watchPurses err', err),
+    );
 
-    const zoe = E(walletP).getZoe();
-    const board = E(walletP).getBoard();
-    if (board) {
-      setApproved(true);
-    }
-    await Promise.all([
-      // setupTreasury(dispatch, brandToInfo, zoe, board, INSTANCE_BOARD_ID),
-      setupAMM(dispatch, brandToInfo, zoe, board, AMM_INSTANCE_BOARD_ID),
-    ]);
-    async function watchPurses() {
-      const pn = E(walletP).getPursesNotifier();
-      for await (const purses of iterateNotifier(pn)) {
-        dispatch(setPurses(purses));
-      }
-    }
-    watchPurses().catch(err => console.error('got watchPurses err', err));
-    async function watchBrands() {
-      console.log('BRANDS REQUESTED');
-      const issuersN = E(walletP).getIssuersNotifier();
-      for await (const issuers of iterateNotifier(issuersN)) {
-        updateBrandPetnames({
-          dispatch,
-          brandToInfo,
-          issuersFromNotifier: issuers,
-        });
-      }
-    }
-    watchBrands().catch(err => {
-      console.error('got watchBrands err', err);
-    });
-    await Promise.all([
-      E(walletP).suggestInstallation(
-        `${AMM_NAME}Installation`,
-        AMM_INSTALLATION_BOARD_ID,
-      ),
-      E(walletP).suggestInstance(`${AMM_NAME}Instance`, AMM_INSTANCE_BOARD_ID),
-      E(walletP).suggestIssuer('IST', STABLE_ISSUER_BOARD_ID),
-    ]);
+    watchMetrics(dispatch).catch(err =>
+      console.error('got watchMetrics err', err),
+    );
+
+    watchGovernedParams(dispatch).catch(err =>
+      console.error('got watchGovernedParams err', err),
+    );
 
     watchOffers(dispatch);
+    setApproved(true);
   };
 
   const setWalletP = async bridge => {
     walletP = bridge;
-
     await retrySetup();
   };
 
@@ -184,4 +139,6 @@ export default function Provider({ children }) {
       <WalletConnection setWalletP={setWalletP} dispatch={dispatch} />
     </ApplicationContext.Provider>
   );
-}
+};
+
+export default Provider;

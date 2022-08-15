@@ -51,23 +51,15 @@ const Swap = () => {
 
   const { state, walletP } = useApplicationContext();
   const {
-    walletOffers,
-    autoswap,
+    poolFee,
+    protocolFee,
     purses,
-    liquidityBrands,
     poolStates,
     brandToInfo,
+    central: centralBrand,
   } = state;
-  const { ammAPI, poolBrands, centralBrand, poolFee, protocolFee } =
-    autoswap ?? {};
   makeDisplayFunctions(brandToInfo);
-  const poolCount = poolBrands?.length;
-  const assetsLoaded =
-    centralBrand &&
-    poolBrands &&
-    purses &&
-    liquidityBrands.size === poolCount &&
-    poolStates.size === poolCount;
+  const assetsLoaded = purses && poolStates?.size;
 
   const calcReceiveAtLeast = slippageToUse => {
     if (!fromAmount || !toAmount || !fromBrand || !toBrand) return null;
@@ -86,7 +78,7 @@ const Swap = () => {
 
   const receiveAtLeast = calcReceiveAtLeast(slippage);
 
-  const handleSwap = () => {
+  const handleSwap = async () => {
     setToastId(
       toast('Please approve the offer in your wallet.', {
         ...defaultToastProperties,
@@ -96,16 +88,15 @@ const Swap = () => {
         autoClose: false,
       }),
     );
-    setCurrentOfferId(walletOffers.length);
     setSwapped(true);
-    makeSwapOffer(
+    const offerId = await makeSwapOffer(
       walletP,
-      ammAPI,
       fromPurse,
       fromAmount.value,
       toPurse,
       receiveAtLeast.value,
     );
+    setCurrentOfferId(offerId);
   };
 
   const switchToAndFrom = () => {

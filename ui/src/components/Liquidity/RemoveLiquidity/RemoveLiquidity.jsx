@@ -8,7 +8,6 @@ import { BiErrorCircle } from 'react-icons/bi';
 import { motion } from 'framer-motion';
 
 import { removeLiquidityService } from 'services/liquidity.service';
-
 import PoolContext, {
   defaultToastProperties,
   Errors,
@@ -37,14 +36,7 @@ const RemoveLiquidity = ({ setOpen }) => {
   } = useContext(RemovePoolContext);
   const { state, walletP } = useApplicationContext();
 
-  const {
-    autoswap: { ammAPI },
-    purses,
-    walletOffers,
-    poolStates,
-    brandToInfo,
-    liquidityBrands,
-  } = state;
+  const { purses, poolStates, brandToInfo } = state;
   const poolState = poolStates.get(brandToRemove);
 
   const handleRemovePool = async () => {
@@ -62,6 +54,21 @@ const RemoveLiquidity = ({ setOpen }) => {
       return;
     }
     setRemoved(true);
+    try {
+      const id = await removeLiquidityService(
+        centralPurseToUse,
+        purseToRemove,
+        amountToRemove,
+        purses,
+        walletP,
+        poolState,
+      );
+      setRemoveOfferId(id);
+    } catch (e) {
+      console.error('Failed to add liquidity offer', e);
+      setRemoved(false);
+      return;
+    }
     setRemoveToastId(
       toast('Please approve the offer in your wallet.', {
         ...defaultToastProperties,
@@ -71,21 +78,12 @@ const RemoveLiquidity = ({ setOpen }) => {
         autoClose: false,
       }),
     );
-    setRemoveOfferId(walletOffers.length);
-    await removeLiquidityService(
-      centralPurseToUse,
-      purseToRemove,
-      amountToRemove,
-      purses,
-      ammAPI,
-      walletP,
-      poolState,
-    );
   };
 
   const { displayPercent } = makeDisplayFunctions(brandToInfo);
 
-  const liquidityBrand = liquidityBrands.get(brandToRemove);
+  const liquidityBrand = poolStates?.get(brandToRemove)?.liquidityTokens?.brand;
+
   const totalUserLiquidityForBrand =
     liquidityBrand &&
     (purses ?? [])

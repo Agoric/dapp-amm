@@ -6,9 +6,8 @@ import { AmountMath } from '@agoric/ertp';
 
 const RateLiquidity = ({ secondaryBrand }) => {
   const {
-    state: { brandToInfo, autoswap, poolStates },
+    state: { brandToInfo, central: centralBrand, poolStates },
   } = useApplicationContext();
-  const { centralBrand } = autoswap ?? {};
   const { displayBrandPetname, displayAmount, getDecimalPlaces } =
     makeDisplayFunctions(brandToInfo);
 

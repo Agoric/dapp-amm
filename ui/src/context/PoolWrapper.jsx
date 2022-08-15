@@ -12,9 +12,8 @@ import PoolContext, { defaultToastProperties, Errors } from './PoolContext';
 
 const PoolWrapper = ({ children }) => {
   const {
-    state: { purses, autoswap, poolStates, walletOffers },
+    state: { purses, central: centralBrand, poolStates, walletOffers },
   } = useApplicationContext();
-  const { centralBrand } = autoswap ?? {};
 
   const [brandToAdd, setBrandToAdd] = useState(null);
   const [purseIdToAdd, setPurseIdToAdd] = useState(null);
@@ -121,7 +120,10 @@ const PoolWrapper = ({ children }) => {
 
   useEffect(() => {
     if (showAddLoader) {
-      const liquidityStatus = walletOffers[addOfferId]?.status;
+      const addOffer = walletOffers.find(
+        ({ id, rawId }) => rawId === addOfferId || id === addOfferId,
+      );
+      const liquidityStatus = addOffer?.status;
       if (liquidityStatus === 'accept') {
         setAddButtonStatus('added');
         toast.update(addToastId, {
@@ -138,7 +140,7 @@ const PoolWrapper = ({ children }) => {
             ...defaultToastProperties,
           }),
         );
-      } else if (walletOffers[addOfferId]?.error) {
+      } else if (addOffer?.error) {
         setAddButtonStatus('rejected');
         setAddToastId(
           toast.update(addToastId, {
@@ -151,15 +153,16 @@ const PoolWrapper = ({ children }) => {
       if (
         liquidityStatus === 'accept' ||
         liquidityStatus === 'decline' ||
-        walletOffers[addOfferId]?.error
+        addOffer?.error
       ) {
+        setAddOfferId(null);
         setTimeout(() => {
           setShowAddLoader(false);
           setAddButtonStatus('Add Liquidity');
         }, 3000);
       }
     }
-  }, [walletOffers[addOfferId]]);
+  }, [walletOffers]);
 
   const purseToAdd =
     purseIdToAdd &&

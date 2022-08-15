@@ -10,9 +10,11 @@ import DialogSwap from '../DialogSwap/DialogSwap';
 
 const SectionSwap = ({ type, value, handleChange }) => {
   const {
-    state: { brandToInfo, autoswap },
+    state: { poolStates, brandToInfo, central },
   } = useApplicationContext();
-  const { poolBrands, centralBrand } = autoswap ?? {};
+
+  assert(poolStates?.size, 'Cannot swap until pools are loaded');
+  const poolBrands = [...poolStates.keys()];
 
   const { displayBrandIcon, displayBrandPetname } =
     makeDisplayFunctions(brandToInfo);
@@ -32,7 +34,7 @@ const SectionSwap = ({ type, value, handleChange }) => {
   const brand = type === 'to' ? toBrand : fromBrand;
   const purse = type === 'to' ? toPurse : fromPurse;
 
-  const brands = [centralBrand, ...poolBrands].filter(b => {
+  const brands = [central, ...poolBrands].filter(b => {
     if (type === 'to') {
       return b !== fromBrand;
     }

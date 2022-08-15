@@ -10,9 +10,8 @@ import PoolContext from 'context/PoolContext';
 
 const CentralAssetLiquidity = ({ value, handleChange }) => {
   const {
-    state: { autoswap, purses, brandToInfo },
+    state: { purses, brandToInfo, central: centralBrand },
   } = useApplicationContext();
-  const { centralBrand } = autoswap ?? {};
   const { displayBrandIcon, displayBrandPetname } =
     makeDisplayFunctions(brandToInfo);
   const { centralPurseToUse, setCentralPurseIdToUse, purseToAdd } =

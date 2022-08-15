@@ -22,7 +22,7 @@ export const getLogoForBrandPetname = brandPetname => {
       return kirkLogo;
     case 'USDC':
       return usdcLogo;
-    case 'ATOM':
+    case 'IbcATOM':
       return atomLogo;
     default:
       return placeHolderAgoric;

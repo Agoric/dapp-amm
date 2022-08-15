@@ -1,40 +1,35 @@
 import { E } from '@endo/captp';
-import { dappConfig } from '../utils/config.js';
 
 export const makeSwapOffer = async (
   walletP,
-  ammAPI,
   inputPurse,
   inputValue,
   outputPurse,
   outputValue,
 ) => {
-  console.log('PURSES:', inputPurse, outputPurse);
-  const id = `${Date.now()}`;
-  const { AMM_INSTALLATION_BOARD_ID, AMM_INSTANCE_BOARD_ID } = dappConfig;
-  const invitation = E(ammAPI).makeSwapInInvitation();
-
+  // FIXME(https://github.com/Agoric/agoric-sdk/issues/5959): Read from chain.
+  const AMM_INSTANCE_BOARD_ID = 'board00917';
   const offerConfig = {
-    id,
-    invitation,
-    installationHandleBoardId: AMM_INSTALLATION_BOARD_ID,
+    invitationMaker: {
+      method: 'makeSwapInInvitation',
+    },
     instanceHandleBoardId: AMM_INSTANCE_BOARD_ID,
     proposalTemplate: {
       give: {
         In: {
           pursePetname: inputPurse.pursePetname,
-          value: inputValue,
+          value: Number(inputValue),
         },
       },
       want: {
         Out: {
           pursePetname: outputPurse.pursePetname,
-          value: outputValue,
+          value: Number(outputValue),
         },
       },
     },
   };
 
   console.info('OFFER CONFIG: ', offerConfig);
-  await E(walletP).addOffer(offerConfig);
+  return E(walletP).addOffer(offerConfig);
 };

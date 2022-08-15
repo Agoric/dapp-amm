@@ -9,9 +9,15 @@ import { useApplicationContext } from './Application';
 
 const PoolWrapper = ({ children }) => {
   const {
-    state: { purses, walletOffers, poolStates, autoswap },
+    state: {
+      purses,
+      walletOffers,
+      poolStates,
+      central: centralBrand,
+      poolFee,
+      protocolFee,
+    },
   } = useApplicationContext();
-  const { centralBrand, poolFee, protocolFee } = autoswap ?? {};
 
   const [fromBrand, setFromBrand] = useState(null);
   const [toBrand, setToBrand] = useState(null);
@@ -27,7 +33,7 @@ const PoolWrapper = ({ children }) => {
   const [slippage, setSlippage] = useState(0.5);
   const [swapped, setSwapped] = useState(false);
   const [toastId, setToastId] = useState('swap');
-  const [currentOfferId, setCurrentOfferId] = useState(walletOffers.length);
+  const [currentOfferId, setCurrentOfferId] = useState(null);
   const [swapButtonStatus, setSwapButtonStatus] = useState('Swap');
 
   const fromPurse =
@@ -96,7 +102,10 @@ const PoolWrapper = ({ children }) => {
 
   useEffect(() => {
     if (swapped) {
-      const swapStatus = walletOffers[currentOfferId]?.status;
+      const currentOffer = walletOffers.find(
+        ({ id, rawId }) => rawId === currentOfferId || id === currentOfferId,
+      );
+      const swapStatus = currentOffer?.status;
       if (swapStatus === 'accept') {
         setSwapButtonStatus('Swapped');
         toast.update(toastId, {
@@ -113,7 +122,7 @@ const PoolWrapper = ({ children }) => {
             ...defaultToastProperties,
           }),
         );
-      } else if (walletOffers[currentOfferId]?.error) {
+      } else if (currentOffer?.error) {
         setSwapButtonStatus('rejected');
         setToastId(
           toast.update(toastId, {
@@ -126,15 +135,16 @@ const PoolWrapper = ({ children }) => {
       if (
         swapStatus === 'accept' ||
         swapStatus === 'decline' ||
-        walletOffers[currentOfferId]?.error
+        currentOffer?.error
       ) {
+        setCurrentOfferId(null);
         setTimeout(() => {
           setSwapped(false);
           setSwapButtonStatus('Swap');
         }, 3000);
       }
     }
-  }, [walletOffers[currentOfferId]]);
+  }, [walletOffers]);
 
   const calcExchangeRate = () => {
     if (!fromBrand || !toBrand) return null;
