@@ -22,10 +22,8 @@ export const addLiquidityService = (
   liquidityPurse,
   walletP,
   pool,
+  instanceId,
 ) => {
-  // FIXME(https://github.com/Agoric/agoric-sdk/issues/5959): Read from chain.
-  const AMM_INSTANCE_BOARD_ID = 'board00917';
-
   const secondaryToGive = calcSecondaryRequired(
     centralAmount.value,
     pool.centralAmount.value,
@@ -43,7 +41,7 @@ export const addLiquidityService = (
     invitationMaker: {
       method: 'makeAddLiquidityInvitation',
     },
-    instanceHandleBoardId: AMM_INSTANCE_BOARD_ID,
+    instanceHandleBoardId: instanceId,
     proposalTemplate: {
       give: {
         Secondary: {
@@ -75,9 +73,8 @@ export const removeLiquidityService = async (
   purses,
   walletP,
   pool,
+  instanceId,
 ) => {
-  // FIXME(https://github.com/Agoric/agoric-sdk/issues/5959): Read from chain.
-  const AMM_INSTANCE_BOARD_ID = 'board00917';
   const liquidityBrand = pool.liquidityTokens.brand;
   const liquidityPurse = purses.find(purse => purse.brand === liquidityBrand);
   assert(liquidityPurse, 'Cannot find a purse for liquidity tokens brand');
@@ -116,7 +113,7 @@ export const removeLiquidityService = async (
     invitationMaker: {
       method: 'makeRemoveLiquidityInvitation',
     },
-    instanceHandleBoardId: AMM_INSTANCE_BOARD_ID,
+    instanceHandleBoardId: instanceId,
     proposalTemplate: {
       give: {
         Liquidity: {

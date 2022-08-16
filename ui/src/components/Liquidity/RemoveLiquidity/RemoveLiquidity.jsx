@@ -36,7 +36,7 @@ const RemoveLiquidity = ({ setOpen }) => {
   } = useContext(RemovePoolContext);
   const { state, walletP } = useApplicationContext();
 
-  const { purses, poolStates, brandToInfo } = state;
+  const { purses, poolStates, brandToInfo, instanceId } = state;
   const poolState = poolStates.get(brandToRemove);
 
   const handleRemovePool = async () => {
@@ -62,6 +62,7 @@ const RemoveLiquidity = ({ setOpen }) => {
         purses,
         walletP,
         poolState,
+        instanceId,
       );
       setRemoveOfferId(id);
     } catch (e) {

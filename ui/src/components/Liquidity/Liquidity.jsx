@@ -16,9 +16,9 @@ const Liquidity = () => {
       : 'bg-white text-gray-400 text-center w-[50%] font-medium uppercase p-1 pt-[6px] pb-[2px] cursor-pointer';
   const [open, setOpen] = useState(false);
   const { state } = useApplicationContext();
-  const { purses, poolStates } = state;
+  const { purses, poolStates, instanceId } = state;
 
-  const assetsLoaded = purses && poolStates?.size;
+  const assetsLoaded = instanceId && purses && poolStates?.size;
 
   return (
     <>
