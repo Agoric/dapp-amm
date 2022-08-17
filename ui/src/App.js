@@ -13,10 +13,11 @@ import SwapWrapper from 'context/SwapWrapper';
 import { motion } from 'framer-motion';
 import WalletToast from 'components/Wallet/WalletToast';
 import InformationToast from 'components/components/InformationToast';
+import WalletConnection from 'components/components/WalletConnection';
 
 const App = () => {
   const [index, setIndex] = useState(0);
-  const { state } = useApplicationContext();
+  const { state, setWalletP, dispatch } = useApplicationContext();
   useEffect(() => {
     if (state?.error?.name) {
       setToast(state.error.name, 'warning', {
@@ -32,15 +33,15 @@ const App = () => {
       <SwapWrapper>
         <InformationToast />
         <WalletToast />
-        <motion.div
-          className="min-h-screen container px-4 mx-auto py-6 flex flex-col items-center relative"
-          layout
-        >
+        <motion.div className="min-h-screen container px-4 mx-auto py-6 flex flex-col items-center relative">
           <img
             src={agoricLogo}
             alt="Agoric Logo"
-            className="md:absolute pl-0 top-0 left-5 m-7"
+            className="absolute pl-0 -top-2 left-0 m-7"
           />
+          <div className="absolute p-0 top-3 right-0 m-2">
+            <WalletConnection setWalletP={setWalletP} dispatch={dispatch} />
+          </div>
           <Tab.Group
             defaultIndex={0}
             onChange={i => {
