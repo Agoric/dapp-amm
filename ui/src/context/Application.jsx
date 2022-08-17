@@ -1,11 +1,9 @@
 import React, { createContext, useContext, useReducer } from 'react';
-import 'json5';
 import { makeAsyncIterableFromNotifier as iterateNotifier } from '@agoric/notifier';
 import { E } from '@endo/eventual-send';
 import { iterateLatest, makeFollower, makeLeader } from '@agoric/casting';
 
 import { boardIdUnserializer } from 'utils/boardIdUnserializer';
-import WalletConnection from '../components/components/WalletConnection';
 
 import {
   reducer,
@@ -158,9 +156,10 @@ const Provider = ({ children }) => {
   };
 
   return (
-    <ApplicationContext.Provider value={{ state, dispatch, walletP }}>
+    <ApplicationContext.Provider
+      value={{ state, dispatch, walletP, setWalletP }}
+    >
       {children}
-      <WalletConnection setWalletP={setWalletP} dispatch={dispatch} />
     </ApplicationContext.Provider>
   );
 };
