@@ -126,10 +126,13 @@ const Provider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, defaultState);
   const { brandToInfo } = state;
 
-  const leader = makeLeader();
-
   const retrySetup = async () => {
-    const unserializer = await E(walletP).getUnserializer();
+    const [unserializer, netConfig] = await Promise.all([
+      E(walletP).getUnserializer(),
+      E(walletP).getNetConfig(),
+    ]);
+    const leader = makeLeader(netConfig);
+
     watchPurses(dispatch, brandToInfo).catch(err =>
       console.error('got watchPurses err', err),
     );
