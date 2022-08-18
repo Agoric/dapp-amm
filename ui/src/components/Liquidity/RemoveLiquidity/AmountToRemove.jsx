@@ -23,42 +23,40 @@ const AmountToRemove = ({ value, setValue, poolShare }) => {
         />
         <div className="text-xl absolute top-3 right-3 text-gray-400">%</div>
       </div>
-      {poolShare && (
-        <div className="flex justify-between text-sm">
-          <div>
-            <button
-              className="rounded-full bg-blue-200 py-1 px-2 ml-2"
-              onClick={() => updateVal(25)}
-            >
-              25%
-            </button>
-            <button
-              className="rounded-full bg-blue-200 py-1 px-2 ml-2"
-              onClick={() => updateVal(50)}
-            >
-              50%
-            </button>
-            <button
-              className="rounded-full bg-blue-200 py-1 px-2 ml-2"
-              onClick={() => updateVal(75)}
-            >
-              75%
-            </button>
-            <button
-              className="rounded-full bg-blue-200 py-1 px-2 ml-2"
-              onClick={() => updateVal(100)}
-            >
-              100%
-            </button>
-          </div>
-          <div>
-            Your pool share:{' '}
-            <label htmlFor="amountToRemove" className="ml-1 text-green-500">
-              {poolShare}%
-            </label>
-          </div>
+      <div className="flex justify-between text-sm">
+        <div>
+          <button
+            className="rounded-full bg-blue-200 py-1 px-2 ml-2"
+            onClick={() => updateVal(25)}
+          >
+            25%
+          </button>
+          <button
+            className="rounded-full bg-blue-200 py-1 px-2 ml-2"
+            onClick={() => updateVal(50)}
+          >
+            50%
+          </button>
+          <button
+            className="rounded-full bg-blue-200 py-1 px-2 ml-2"
+            onClick={() => updateVal(75)}
+          >
+            75%
+          </button>
+          <button
+            className="rounded-full bg-blue-200 py-1 px-2 ml-2"
+            onClick={() => updateVal(100)}
+          >
+            100%
+          </button>
         </div>
-      )}
+        <div>
+          Your pool share:{' '}
+          <label htmlFor="amountToRemove" className="ml-1 text-green-500">
+            {poolShare}%
+          </label>
+        </div>
+      </div>
     </div>
   );
 };

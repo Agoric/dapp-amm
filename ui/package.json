@@ -4,17 +4,18 @@
   "private": true,
   "dependencies": {
     "@agoric/assert": "dev",
-    "@endo/captp": "^1.10.12",
-    "@endo/marshal": "^0.5.4",
+    "@agoric/casting": "dev",
     "@agoric/ertp": "dev",
-    "@endo/eventual-send": "^0.14.4",
-    "@agoric/install-ses": "^0.5.29",
     "@agoric/nat": "^4.1.0",
     "@agoric/notifier": "dev",
+    "@agoric/run-protocol": "dev",
     "@agoric/same-structure": "^0.1.29",
     "@agoric/ui-components": "dev",
+    "@agoric/web-components": "dev",
     "@agoric/zoe": "^0.21.0",
-    "@craco/craco": "^6.3.0",
+    "@endo/captp": "^1.10.12",
+    "@endo/eventual-send": "^0.14.4",
+    "@endo/marshal": "^0.5.4",
     "@headlessui/react": "^1.4.1",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
@@ -23,15 +24,13 @@
     "clsx": "^1.1.1",
     "eslint": "^7.32.0",
     "framer-motion": "^4.1.17",
-    "json5": "^2.1.3",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-icons": "^4.2.0",
     "react-loader-spinner": "^4.0.0",
-    "react-scripts": "4.0.3",
     "react-toastify": "^8.0.0",
-    "ses": "^0.12.7",
+    "ses": "0.15.17",
     "uuid": "^8.3.2",
     "web-vitals": "^1.0.1"
   },
@@ -42,13 +41,11 @@
     "lint:eslint": "eslint '**/*.{js,jsx}'",
     "lint-fix": "eslint --fix '**/*.{js,jsx}'",
     "configure": "node use-on-chain-config",
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test --passWithNoTests",
-    "build:ses": "cp ../node_modules/ses/dist/lockdown.umd.js public/",
-    "build:react": "yarn configure; yarn build:pre-patch; craco build; yarn build:post-patch",
-    "build:pre-patch": "node -r esm ./ses-patch.js src/utils/installSESLockdown.js",
-    "build:post-patch": "node -r esm ./ses-patch.js build/index.html",
+    "start": "yarn build:ses && react-app-rewired start",
+    "build": "yarn build:ses && react-app-rewired build",
+    "test": "react-app-rewired test --passWithNoTests",
+    "build:ses": "cp ./node_modules/ses/dist/lockdown.umd.js public/",
+    "build:react": "yarn configure; react-app-rewired build",
     "eject": "react-scripts eject"
   },
   "browserslist": {
@@ -65,24 +62,36 @@
   },
   "devDependencies": {
     "@babel/eslint-plugin": "^7.12.1",
-    "@endo/eslint-plugin": "^0.3.10",
-    "@jessie.js/eslint-plugin": "^0.1.3",
+    "@endo/eslint-plugin": "^0.4.1",
+    "@jessie.js/eslint-plugin": "^0.2.0",
     "autoprefixer": "^9.8.6",
     "babel-eslint": "^10.1.0",
-    "eslint-plugin-react": "^7.21.5",
-    "eslint-plugin-react-hooks": "^4",
+    "eslint-plugin-react": "^7.30.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "postcss": "^7.0.36",
-    "prettier": "^1.19.1",
-    "react-scripts": "4.0.3",
+    "prettier": "^2.7.0",
+    "react-scripts": "^5.0.1",
     "rimraf": "^3.0.2",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.14"
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.14",
+    "react-app-rewired": "^2.2.1"
   },
   "prettier": {
+    "arrowParens": "avoid",
     "trailingComma": "all",
     "singleQuote": true
   },
+  "eslintConfig": {
+    "env": {
+      "es2020": true,
+      "browser": true
+    }
+  },
   "eslintIgnore": [
     "/*.config.js",
-    "/build"
+    "dist/",
+    "conf/",
+    "build/",
+    ".cache",
+    "node_modules"
   ]
 }

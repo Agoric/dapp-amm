@@ -1,91 +1,49 @@
-import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-toastify';
-import agoricLogo from 'assets/crypto-icons/agoric-logo.png';
-import bldLogo from 'assets/crypto-icons/bld-logo.png';
-import kirkLogo from 'assets/crypto-icons/kirk-logo.png';
-import usdcLogo from 'assets/crypto-icons/usdc-logo.png';
+import {
+  stringifyRatioAsPercent,
+  stringifyRatio,
+  stringifyValue,
+} from '@agoric/ui-components';
+import { AssetKind } from '@agoric/ertp';
+import agoricLogo from '../assets/crypto-icons/agoric-logo.png';
+import bldLogo from '../assets/crypto-icons/bld-logo.png';
+import kirkLogo from '../assets/crypto-icons/kirk-logo.png';
+import usdcLogo from '../assets/crypto-icons/usdc-logo.png';
+import atomLogo from '../assets/crypto-icons/atom-logo.png';
+import placeHolderAgoric from '../assets/placeholder-agoric.png';
 
-/**
- * gets filtered array of purses
- *
- * @param {Array} purses
- * @returns {Array}
- */
-export const getAssets = purses => {
-  const filteredPurses = purses?.filter(
-    purse => purse.displayInfo.assetKind !== 'set',
-  );
-  // used for storing intermediate response
-  const interArr = [];
-  filteredPurses?.forEach(purse => {
-    // balances noted in bigInt, converting them using the provided decimalplaces
-    const balance =
-      Number(purse.currentAmount?.value) /
-      10 ** purse.displayInfo?.decimalPlaces;
-
-    // if such asset already inserted
-    const similarAssetIndex = interArr.findIndex(elem => {
-      return elem.code === purse.brandPetname;
-    });
-
-    if (similarAssetIndex !== -1) {
-      interArr[similarAssetIndex].balance += balance;
-
-      interArr[similarAssetIndex].purses.push({
-        id: uuidv4(),
-        name: purse.pursePetname,
-        balance,
-        // cmt(danish): balance USD not available right now
-        balanceUSD: undefined,
-        ...purse,
-      });
-      // skip if already includes but add in purse
-      console.log('skipping: ', purse);
-      return;
-    }
-
-    // setting default image as agoric logo
-    let image = agoricLogo;
-    switch (purse.brandPetname) {
-      case 'RUN':
-        image = agoricLogo;
-        break;
-      case 'BLD':
-        image = bldLogo;
-        break;
-      case 'LINK':
-        image = kirkLogo;
-        break;
-      case 'USDC':
-        image = usdcLogo;
-        break;
-      default:
-        break;
-    }
-
-    interArr.push({
-      id: uuidv4(),
-      code: purse.brandPetname,
-      name: purse.brandPetname,
-      brand: purse.brand,
-      // cmt(danish): no images defined now
-      image,
-      balance,
-      purses: [
-        {
-          id: uuidv4(),
-          name: purse.pursePetname,
-          balance,
-          // cmt(danish): balance USD not available right now
-          balanceUSD: undefined,
-          ...purse,
-        },
-      ],
-    });
-  });
-
-  return interArr;
+export const getLogoForBrandPetname = brandPetname => {
+  switch (brandPetname) {
+    case 'IST':
+      return agoricLogo;
+    case 'BLD':
+      return bldLogo;
+    case 'LINK':
+      return kirkLogo;
+    case 'USDC':
+      return usdcLogo;
+    case 'IbcATOM':
+      return atomLogo;
+    default:
+      return placeHolderAgoric;
+  }
 };
+
+export const getPurseAssetKind = purse =>
+  (purse && purse.displayInfo && purse.displayInfo.assetKind) || undefined;
+
+export const getPurseDecimalPlaces = purse =>
+  (purse && purse.displayInfo && purse.displayInfo.decimalPlaces) || undefined;
+
+export const displayPetname = pn => (Array.isArray(pn) ? pn.join('.') : pn);
+
+export const filterPursesByBrand = (purses, desiredBrand) =>
+  purses.filter(({ brand }) => brand === desiredBrand);
+
+export const comparePurses = (a, b) =>
+  displayPetname(a.pursePetname) > displayPetname(b.pursePetname) ? 1 : -1;
+
+export const sortPurses = purses => purses.sort(comparePurses);
 
 export const getInfoForBrand = (brandToInfo, brand) => {
   const array = brandToInfo.find(([b]) => b === brand);
@@ -93,6 +51,46 @@ export const getInfoForBrand = (brandToInfo, brand) => {
     return array[1];
   }
   return undefined;
+};
+
+export const makeDisplayFunctions = brandToInfo => {
+  const brandToInfoMap = new Map(brandToInfo);
+
+  const getDecimalPlaces = brand => brandToInfoMap.get(brand)?.decimalPlaces;
+  const getPetname = brand => brandToInfoMap.get(brand)?.petname;
+
+  const displayPercent = (ratio, placesToShow) => {
+    return stringifyRatioAsPercent(ratio, getDecimalPlaces, placesToShow);
+  };
+
+  const displayBrandPetname = brand => {
+    return displayPetname(getPetname(brand));
+  };
+
+  const displayRatio = (ratio, placesToShow) => {
+    return stringifyRatio(ratio, getDecimalPlaces, placesToShow);
+  };
+
+  const displayAmount = (amount, placesToShow) => {
+    const decimalPlaces = getDecimalPlaces(amount.brand);
+    return stringifyValue(
+      amount.value,
+      AssetKind.NAT,
+      decimalPlaces,
+      placesToShow,
+    );
+  };
+
+  const displayBrandIcon = brand => getLogoForBrandPetname(getPetname(brand));
+
+  return {
+    displayPercent,
+    displayBrandPetname,
+    displayRatio,
+    displayAmount,
+    getDecimalPlaces,
+    displayBrandIcon,
+  };
 };
 
 export const setToast = (msg, type, properties) => {
@@ -133,4 +131,3 @@ export const setToast = (msg, type, properties) => {
     default:
   }
 };
-export const displayPetname = pn => (Array.isArray(pn) ? pn.join('.') : pn);

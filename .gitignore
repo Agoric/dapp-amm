@@ -1,3 +1,5 @@
 node_modules
 _agstate
 build
+*.log
+ui/public/lockdown.umd.js

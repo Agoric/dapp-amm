@@ -1,34 +1,25 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import 'json5';
-import 'utils/installSESLockdown';
-
-import { makeCapTP, E } from '@endo/captp';
-import { Far } from '@endo/marshal';
+import React, { createContext, useContext, useReducer } from 'react';
 import { makeAsyncIterableFromNotifier as iterateNotifier } from '@agoric/notifier';
+import { E } from '@endo/eventual-send';
+import { iterateLatest, makeFollower, makeLeader } from '@agoric/casting';
 
-import {
-  activateWebSocket,
-  deactivateWebSocket,
-  getActiveSocket,
-} from '../utils/fetchWebSocket';
-
-import { dappConfig, refreshConfigFromWallet } from '../utils/config';
+import { boardIdUnserializer } from 'utils/boardIdUnserializer';
 
 import {
   reducer,
   defaultState,
-  setAssets,
-  resetState,
-  setAutoswap,
+  setPurses,
   setApproved,
-  setError,
   updateOffers,
+  setPoolState,
+  setCentral,
+  setPoolFee,
+  setProtocolFee,
+  setLiquidityIssuerId,
+  setInstanceId,
 } from '../store/store';
 
-import {
-  updateBrandPetnames,
-  storeAllBrandsFromTerms,
-} from '../utils/storeBrandInfo';
+import { storePurseBrand } from '../utils/storeBrandInfo';
 
 /* eslint-disable */
 let walletP;
@@ -38,169 +29,142 @@ export { walletP };
 
 export const ApplicationContext = createContext();
 
-export function useApplicationContext() {
-  return useContext(ApplicationContext);
-}
+export const useApplicationContext = () => useContext(ApplicationContext);
 
-const setupAMM = async (dispatch, brandToInfo, zoe, board, instanceID) => {
-  const instance = await E(board).getValue(instanceID);
-  const [ammAPI, terms] = await Promise.all([
-    E(zoe).getPublicFacet(instance),
-    E(zoe).getTerms(instance),
-  ]);
-  // TODO this uses getTerms.brands, but that includes utility tokens, etc.
-  // We need a query/notifier for what are the pools supported
-  const {
-    brands: { Central: centralBrand, ...otherBrands },
-  } = terms;
-  console.log('AMM brands retrieved', otherBrands);
-  dispatch(setAutoswap({ instance, ammAPI, centralBrand, otherBrands }));
-  await storeAllBrandsFromTerms({
-    dispatch,
-    terms,
-    brandToInfo,
-  });
-};
-
-function watchOffers(dispatch) {
+const watchOffers = dispatch => {
   async function offersUpdater() {
     const offerNotifier = E(walletP).getOffersNotifier();
     for await (const offers of iterateNotifier(offerNotifier)) {
-      console.log('======== OFFERS', offers);
       dispatch(updateOffers(offers));
     }
   }
   offersUpdater().catch(err => console.error('Offers watcher exception', err));
-}
+};
 
-/* eslint-disable complexity, react/prop-types */
-export default function Provider({ children }) {
+const watchPoolMetrics = async (dispatch, brand, i, leader, unserializer) => {
+  const f = makeFollower(`:published.amm.pool${i}.metrics`, leader, {
+    unserializer,
+  });
+
+  for await (const { value } of iterateLatest(f)) {
+    dispatch(setPoolState({ brand, value }));
+    if (i === 0) {
+      dispatch(setCentral(value.centralAmount.brand));
+    }
+  }
+};
+
+const loadPoolInit = async (dispatch, brand, i, leader) => {
+  const f = makeFollower(`:published.amm.pool${i}.init`, leader, {
+    unserializer: boardIdUnserializer,
+  });
+
+  // TODO: Find a more elegant way to read just the first value.
+  for await (const { value } of iterateLatest(f)) {
+    dispatch(
+      setLiquidityIssuerId({ brand, id: value.liquidityIssuerRecord.issuer }),
+    );
+    return;
+  }
+};
+
+const watchMetrics = async (dispatch, leader, unserializer) => {
+  const f = makeFollower(':published.amm.metrics', leader, { unserializer });
+
+  for await (const { value } of iterateLatest(f)) {
+    value.XYK.forEach((brand, i) => {
+      watchPoolMetrics(dispatch, brand, i, leader, unserializer).catch(err =>
+        console.error('got watchPoolMetrics err', err),
+      );
+      loadPoolInit(dispatch, brand, i, leader).catch(err =>
+        console.error('got loadPoolInit err', err),
+      );
+    });
+  }
+};
+
+const watchGovernedParams = async (dispatch, leader, unserializer) => {
+  const f = makeFollower(':published.amm.governance', leader, { unserializer });
+
+  for await (const { value } of iterateLatest(f)) {
+    const { PoolFee, ProtocolFee } = value.current;
+    dispatch(setPoolFee(PoolFee.value));
+    dispatch(setProtocolFee(ProtocolFee.value));
+  }
+};
+
+const watchPurses = async (dispatch, brandToInfo) => {
+  const n = await E(walletP).getPursesNotifier();
+  for await (const purses of iterateNotifier(n)) {
+    dispatch(setPurses(purses));
+    purses.forEach(({ brand, displayInfo, brandPetname: petname }) =>
+      storePurseBrand({
+        dispatch,
+        brandToInfo,
+        brand,
+        petname,
+        displayInfo,
+      }),
+    );
+  }
+};
+
+const loadInstanceId = async (dispatch, leader) => {
+  const f = makeFollower(`:published.agoricNames.instance`, leader, {
+    unserializer: boardIdUnserializer,
+  });
+
+  // TODO: Find a more elegant way to read just the first value.
+  for await (const { value } of iterateLatest(f)) {
+    const mappedEntries = new Map(value);
+    dispatch(setInstanceId(mappedEntries.get('amm')));
+    return;
+  }
+};
+
+const Provider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, defaultState);
   const { brandToInfo } = state;
 
-  useEffect(() => {
-    // Receive callbacks from the wallet connection.
-    const otherSide = Far('needDappApproval', {
-      needDappApproval(_dappOrigin, _suggestedDappPetname) {
-        dispatch(setApproved(false));
-      },
-      dappApproved(_dappOrigin) {
-        dispatch(setApproved(true));
-      },
-    });
+  const retrySetup = async () => {
+    const [unserializer, netConfig] = await Promise.all([
+      E(walletP).getUnserializer(),
+      E(walletP).getNetConfig(),
+    ]);
+    const leader = makeLeader(netConfig);
 
-    let walletAbort;
-    let walletDispatch;
-    activateWebSocket({
-      async onConnect() {
-        const { CONTRACT_NAME, AMM_NAME } = dappConfig;
+    watchPurses(dispatch, brandToInfo).catch(err =>
+      console.error('got watchPurses err', err),
+    );
 
-        const socket = getActiveSocket();
-        const {
-          abort: ctpAbort,
-          dispatch: ctpDispatch,
-          getBootstrap,
-        } = makeCapTP(
-          CONTRACT_NAME,
-          obj => socket.send(JSON.stringify(obj)),
-          otherSide,
-        );
-        walletAbort = ctpAbort;
-        walletDispatch = ctpDispatch;
-        walletP = getBootstrap();
+    watchMetrics(dispatch, leader, unserializer).catch(err =>
+      console.error('got watchMetrics err', err),
+    );
 
-        await refreshConfigFromWallet(walletP);
-        const {
-          RUN_ISSUER_BOARD_ID,
-          AMM_INSTALLATION_BOARD_ID,
-          AMM_INSTANCE_BOARD_ID,
-        } = dappConfig;
+    watchGovernedParams(dispatch, leader, unserializer).catch(err =>
+      console.error('got watchGovernedParams err', err),
+    );
 
-        const zoe = E(walletP).getZoe();
-        const board = E(walletP).getBoard();
+    loadInstanceId(dispatch, leader).catch(err =>
+      console.error('got loadInstanceId err', err),
+    );
 
-        if (board) {
-          setApproved(true);
-        }
-        // else{
-        //   setApproved(false);
-        // }
-        await Promise.all([
-          // setupTreasury(dispatch, brandToInfo, zoe, board, INSTANCE_BOARD_ID),
-          setupAMM(dispatch, brandToInfo, zoe, board, AMM_INSTANCE_BOARD_ID),
-        ]);
+    watchOffers(dispatch);
+    setApproved(true);
+  };
 
-        // The moral equivalent of walletGetPurses()
-        async function watchPurses() {
-          const pn = E(walletP).getPursesNotifier();
-          for await (const purses of iterateNotifier(pn)) {
-            dispatch(setAssets(purses));
-          }
-        }
-        watchPurses().catch(err =>
-          console.error('FIGME: got watchPurses err', err),
-        );
-
-        async function watchBrands() {
-          console.log('BRANDS REQUESTED');
-          const issuersN = E(walletP).getIssuersNotifier();
-          for await (const issuers of iterateNotifier(issuersN)) {
-            updateBrandPetnames({
-              dispatch,
-              brandToInfo,
-              issuersFromNotifier: issuers,
-            });
-          }
-        }
-        watchBrands().catch(err => {
-          console.error('got watchBrands err', err);
-        });
-        await Promise.all([
-          E(walletP).suggestInstallation(
-            `${AMM_NAME}Installation`,
-            AMM_INSTALLATION_BOARD_ID,
-          ),
-          E(walletP).suggestInstance(
-            `${AMM_NAME}Instance`,
-            AMM_INSTANCE_BOARD_ID,
-          ),
-          E(walletP).suggestIssuer('RUN', RUN_ISSUER_BOARD_ID),
-        ]);
-
-        watchOffers(dispatch);
-      },
-      onDisconnect() {
-        dispatch(setApproved(false));
-        console.log('Running on Disconnect');
-        walletAbort && walletAbort();
-        dispatch(resetState());
-      },
-      onMessage(data) {
-        const obj = JSON.parse(data);
-        console.log('Printing Object empty: ', obj);
-        console.log(!obj.exception);
-        if (obj.exception) {
-          console.log(obj.exception.body);
-          dispatch(
-            setError({
-              name: 'Something went wrong.',
-            }),
-          );
-        } else {
-          console.log('wallet Disconnect:', obj?.payload?.payload === false);
-          if (obj?.payload?.payload === false) {
-            setApproved(false);
-          }
-          walletDispatch && walletDispatch(obj);
-        }
-      },
-    });
-    return deactivateWebSocket;
-  }, []);
+  const setWalletP = async bridge => {
+    walletP = bridge;
+    await retrySetup();
+  };
 
   return (
-    <ApplicationContext.Provider value={{ state, dispatch, walletP }}>
+    <ApplicationContext.Provider
+      value={{ state, dispatch, walletP, setWalletP }}
+    >
       {children}
     </ApplicationContext.Provider>
   );
-}
+};
+
+export default Provider;

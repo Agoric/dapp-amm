@@ -1,3 +1,4 @@
+import '@endo/eventual-send/shim';
 import React from 'react';
 import { render } from 'react-dom';
 import ApplicationContextProvider from 'context/Application';

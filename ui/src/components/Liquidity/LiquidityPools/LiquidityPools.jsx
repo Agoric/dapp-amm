@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
 import { FiChevronLeft } from 'react-icons/fi';
-import BodyLiquidityPool from './BodyLiquidityPool';
+import BodyLiquidityPools from './BodyLiquidityPools';
 
 const LiquidityPool = ({ open, setOpen, setTabIndex }) => {
   return (
@@ -33,9 +33,9 @@ const LiquidityPool = ({ open, setOpen, setTabIndex }) => {
               }}
             >
               <FiChevronLeft className="text-xl text-primary" />
-              Close Liquidity Positions
+              Close Liquidity Pools
             </button>
-            <BodyLiquidityPool
+            <BodyLiquidityPools
               open={open}
               handleClose={() => setOpen(false)}
               setTabIndex={setTabIndex}
