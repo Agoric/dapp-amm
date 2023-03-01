@@ -855,6 +855,13 @@
   dependencies:
     ses "^0.18.1"
 
+"@endo/ses-ava@^0.2.37":
+  version "0.2.37"
+  resolved "https://registry.yarnpkg.com/@endo/ses-ava/-/ses-ava-0.2.37.tgz#ed502309cd4e0cdb0ac04fd9072a96508a41b4d1"
+  integrity sha512-9iC4g7TPHAfbPLpLlB9D3jCXiLWmH9SKRd/gcZxPNr1smWr0Nj8p8p7vzxUu7oStzAFNOArMGriTzJ29qgeeFw==
+  dependencies:
+    ses "^0.18.1"
+
 "@endo/static-module-record@^0.7.14", "@endo/static-module-record@^0.7.16":
   version "0.7.16"
   resolved "https://registry.yarnpkg.com/@endo/static-module-record/-/static-module-record-0.7.16.tgz#f00691a8943b18715f21a6c3e84bf05a3fefd314"
